@@ -12,7 +12,7 @@ using MotionStudio.App.Views;
 namespace MotionStudio.App;
 
 /// <summary>
-/// MotionStudio 主窗口，承载 HandyControl 工业软件布局。
+/// MotionStudio 主窗口，承载 HandyControl 工业软件布局。11
 /// </summary>
 public partial class MainWindow : HandyControl.Controls.Window
 {
@@ -35,7 +35,7 @@ public partial class MainWindow : HandyControl.Controls.Window
             {
                 _logWindow.WindowState = System.Windows.WindowState.Normal;
             }
-
+           
             _logWindow.Activate();
             return;
         }
