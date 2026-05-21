@@ -27,6 +27,10 @@ public sealed class SingleAxisDebugViewModel : ObservableObject
     private bool _axisCommandRunning;
     private string _operationMessage = "请先初始化运动卡。";
     private CancellationTokenSource? _moveCancellation;
+    private CancellationTokenSource? _jogCancellation;
+    private Task? _jogTask;
+    private IMotionCard? _activeJogCard;
+    private AxisBaseConfig? _activeJogAxis;
 
     public SingleAxisDebugViewModel(
         IReadOnlyDictionary<string, IMotionCard> motionCards,
@@ -171,6 +175,93 @@ public sealed class SingleAxisDebugViewModel : ObservableObject
         ((AsyncRelayCommand)JogPositiveCommand).RaiseCanExecuteChanged();
         ((AsyncRelayCommand)StopAxisCommand).RaiseCanExecuteChanged();
         ((AsyncRelayCommand)EmergencyStopAxisCommand).RaiseCanExecuteChanged();
+    }
+
+    public Task BeginJogAsync(bool positive)
+    {
+        if (_jogTask is { IsCompleted: false })
+        {
+            return Task.CompletedTask;
+        }
+
+        if (_axisCommandRunning)
+        {
+            OperationMessage = "当前有轴命令在执行，请稍后再试 Jog。";
+            return Task.CompletedTask;
+        }
+
+        if (!TryGetSelectedConnectedMotionCard(out var card, out var message) || SelectedAxis is null)
+        {
+            OperationMessage = message;
+            RefreshCommandState();
+            return Task.CompletedTask;
+        }
+
+        var jogStep = Math.Abs(GetSelectedRelativeDistance());
+        if (jogStep <= 0)
+        {
+            OperationMessage = "Jog 步长必须大于 0。";
+            return Task.CompletedTask;
+        }
+
+        _moveCancellation?.Cancel();
+        _moveCancellation?.Dispose();
+
+        var jogCancellation = new CancellationTokenSource();
+        _jogCancellation = jogCancellation;
+        _moveCancellation = jogCancellation;
+        _activeJogCard = card;
+        _activeJogAxis = SelectedAxis;
+
+        _axisCommandRunning = true;
+        OperationMessage = positive ? "Jog+ 按下，持续运行中..." : "Jog- 按下，持续运行中...";
+        RefreshCommandState();
+
+        var distance = positive ? jogStep : -jogStep;
+        _jogTask = RunJogLoopAsync(card, SelectedAxis, distance, jogCancellation);
+        return Task.CompletedTask;
+    }
+
+    public async Task EndJogAsync()
+    {
+        var jogCancellation = _jogCancellation;
+        var jogTask = _jogTask;
+        if (jogCancellation is null && (jogTask is null || jogTask.IsCompleted))
+        {
+            return;
+        }
+
+        jogCancellation?.Cancel();
+
+        if (_activeJogCard is not null && _activeJogAxis is not null)
+        {
+            try
+            {
+                var stopOk = await _activeJogCard.StopAxisAsync(_activeJogAxis.AxisNo, emergency: false).ConfigureAwait(true);
+                OperationMessage = stopOk ? "Jog 已停止。" : "Jog 停止失败。";
+                _logService.Write(
+                    stopOk ? MotionStudio.Core.Logging.LogLevel.Warning : MotionStudio.Core.Logging.LogLevel.Error,
+                    "AxisDebug",
+                    FormatAxisLogMessage(_activeJogAxis, OperationMessage));
+            }
+            catch (Exception ex)
+            {
+                OperationMessage = $"Jog 停止异常：{ex.Message}";
+                _logService.Error("AxisDebug", OperationMessage);
+            }
+        }
+
+        if (jogTask is not null)
+        {
+            try
+            {
+                await jogTask.ConfigureAwait(true);
+            }
+            catch (OperationCanceledException)
+            {
+                // Jog 主动停止时允许取消异常。
+            }
+        }
     }
 
     private void LoadAxisConfig()
@@ -352,6 +443,57 @@ public sealed class SingleAxisDebugViewModel : ObservableObject
         }
         finally
         {
+            RefreshAxisState();
+            RefreshCommandState();
+        }
+    }
+
+    private async Task RunJogLoopAsync(
+        IMotionCard card,
+        AxisBaseConfig axis,
+        double distance,
+        CancellationTokenSource jogCancellation)
+    {
+        try
+        {
+            while (!jogCancellation.IsCancellationRequested)
+            {
+                var ok = await card.RelMoveAsync(
+                    axis.AxisNo,
+                    distance,
+                    axis.VelocityRatio,
+                    axis.HomeTimeout,
+                    jogCancellation.Token).ConfigureAwait(true);
+                if (!ok)
+                {
+                    OperationMessage = "Jog 执行失败。";
+                    _logService.Warning("AxisDebug", FormatAxisLogMessage(axis, OperationMessage));
+                    break;
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Jog 停止时由 EndJogAsync 统一提示。
+        }
+        catch (Exception ex)
+        {
+            OperationMessage = $"Jog 异常：{ex.Message}";
+            _logService.Error("AxisDebug", FormatAxisLogMessage(axis, OperationMessage));
+        }
+        finally
+        {
+            if (ReferenceEquals(_jogCancellation, jogCancellation))
+            {
+                jogCancellation.Dispose();
+                _jogCancellation = null;
+                _moveCancellation = null;
+                _activeJogCard = null;
+                _activeJogAxis = null;
+                _jogTask = null;
+            }
+
+            _axisCommandRunning = false;
             RefreshAxisState();
             RefreshCommandState();
         }

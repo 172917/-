@@ -321,8 +321,16 @@
                         <UniformGrid Grid.Row="2" Columns="5" Margin="-4,0,-4,0">
                             <Button Content="绝对移动" Style="{StaticResource AxisOperationRunButtonStyle}" Command="{Binding AbsMoveCommand}" />
                             <Button Content="相对移动" Style="{StaticResource AxisOperationRunButtonStyle}" Command="{Binding RelMoveCommand}" />
-                            <Button Content="Jog-" Style="{StaticResource AxisOperationButtonStyle}" Command="{Binding JogNegativeCommand}" />
-                            <Button Content="Jog+" Style="{StaticResource AxisOperationButtonStyle}" Command="{Binding JogPositiveCommand}" />
+                            <Button Content="Jog-"
+                                    Style="{StaticResource AxisOperationButtonStyle}"
+                                    PreviewMouseLeftButtonDown="JogNegativeButton_OnPreviewMouseLeftButtonDown"
+                                    PreviewMouseLeftButtonUp="JogButton_OnPreviewMouseLeftButtonUp"
+                                    LostMouseCapture="JogButton_OnLostMouseCapture" />
+                            <Button Content="Jog+"
+                                    Style="{StaticResource AxisOperationButtonStyle}"
+                                    PreviewMouseLeftButtonDown="JogPositiveButton_OnPreviewMouseLeftButtonDown"
+                                    PreviewMouseLeftButtonUp="JogButton_OnPreviewMouseLeftButtonUp"
+                                    LostMouseCapture="JogButton_OnLostMouseCapture" />
                             <Button Content="急停" Style="{StaticResource AxisOperationEmergencyButtonStyle}" Command="{Binding EmergencyStopAxisCommand}" />
                         </UniformGrid>
                     </Grid>
