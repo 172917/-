@@ -1,0 +1,25 @@
+<Application x:Class="MotionStudio.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:MotionStudio.App.ViewModels"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
+                <ResourceDictionary Source="Resources/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Icons.xaml" />
+                <ResourceDictionary Source="Resources/Buttons.xaml" />
+                <ResourceDictionary Source="Resources/Cards.xaml" />
+                <ResourceDictionary Source="Resources/ModuleBarStyles.xaml" />
+                <ResourceDictionary Source="Resources/ProcessBarStyles.xaml" />
+                <ResourceDictionary Source="Resources/PropertyPanelStyles.xaml" />
+                <ResourceDictionary Source="Resources/LogPanelStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <vm:BoolToRunTextConverter x:Key="BoolToRunTextConverter" />
+            <vm:FlowIndexConverter x:Key="FlowIndexConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

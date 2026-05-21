@@ -1,0 +1,29 @@
+<UserControl x:Class="MotionStudio.App.Views.MotionStatusPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:hc="https://handyorg.github.io/handycontrol">
+    <Border Background="{StaticResource MotionBrush.PanelAltBackground}"
+            BorderBrush="{StaticResource MotionBrush.Border}"
+            BorderThickness="1,1,0,0"
+            Padding="10,3">
+        <DockPanel LastChildFill="False">
+            <TextBlock Text="{Binding MotionCardStateText}"
+                       Foreground="{StaticResource MotionBrush.TextPrimary}"
+                       Margin="0,0,18,0" />
+            <TextBlock Text="{Binding RuntimeState.IsRunning, Converter={StaticResource BoolToRunTextConverter}, StringFormat=流程：{0}}"
+                       Foreground="{StaticResource MotionBrush.TextPrimary}"
+                       Margin="0,0,18,0" />
+            <TextBlock Text="{Binding RuntimeState.CurrentModuleName, StringFormat=当前模块：{0}, TargetNullValue=当前模块：-}"
+                       Foreground="{StaticResource MotionBrush.TextPrimary}"
+                       Margin="0,0,18,0" />
+            <TextBlock Text="{Binding RuntimeState.TotalCostTimeMs, StringFormat=总耗时：{0} ms}"
+                       Foreground="{StaticResource MotionBrush.TextPrimary}"
+                       Margin="0,0,18,0" />
+            <TextBlock Text="{Binding RuntimeState.AlarmCount, StringFormat=报警：{0}}"
+                       Foreground="{StaticResource MotionBrush.Warning}"
+                       Margin="0,0,18,0" />
+            <hc:Tag DockPanel.Dock="Right" Content="急停" Foreground="{StaticResource MotionBrush.Danger}"
+                    Visibility="{Binding RuntimeState.IsEmergencyStop, Converter={StaticResource BoolToVisibilityConverter}}" />
+        </DockPanel>
+    </Border>
+</UserControl>

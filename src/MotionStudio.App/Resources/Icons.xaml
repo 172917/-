@@ -1,0 +1,12 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <sys:String x:Key="MotionIcon.New">N</sys:String>
+    <sys:String x:Key="MotionIcon.Open">O</sys:String>
+    <sys:String x:Key="MotionIcon.Save">S</sys:String>
+    <sys:String x:Key="MotionIcon.Init">I</sys:String>
+    <sys:String x:Key="MotionIcon.Run">RUN</sys:String>
+    <sys:String x:Key="MotionIcon.Stop">STOP</sys:String>
+    <sys:String x:Key="MotionIcon.EStop">E-STOP</sys:String>
+    <sys:String x:Key="MotionIcon.Step">STEP</sys:String>
+</ResourceDictionary>

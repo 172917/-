@@ -1,0 +1,33 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="MotionColor.WindowBackground">#FFF5F7FA</Color>
+    <Color x:Key="MotionColor.PanelBackground">#FFFFFFFF</Color>
+    <Color x:Key="MotionColor.PanelAltBackground">#FFEEF3F8</Color>
+    <Color x:Key="MotionColor.CardBackground">#FFFFFFFF</Color>
+    <Color x:Key="MotionColor.CardSelected">#FFE3F2FD</Color>
+    <Color x:Key="MotionColor.Border">#FFD8E0E8</Color>
+    <Color x:Key="MotionColor.TextPrimary">#FF1F2933</Color>
+    <Color x:Key="MotionColor.TextSecondary">#FF5B6773</Color>
+    <Color x:Key="MotionColor.Accent">#FF1976D2</Color>
+    <Color x:Key="MotionColor.Success">#FF2E8B57</Color>
+    <Color x:Key="MotionColor.Warning">#FFE89A22</Color>
+    <Color x:Key="MotionColor.Danger">#FFD93025</Color>
+    <Color x:Key="MotionColor.Disabled">#FF9AA6B2</Color>
+    <Color x:Key="MotionColor.ButtonHover">#FFE2ECF7</Color>
+
+    <SolidColorBrush x:Key="MotionBrush.WindowBackground" Color="{StaticResource MotionColor.WindowBackground}" />
+    <SolidColorBrush x:Key="MotionBrush.PanelBackground" Color="{StaticResource MotionColor.PanelBackground}" />
+    <SolidColorBrush x:Key="MotionBrush.PanelAltBackground" Color="{StaticResource MotionColor.PanelAltBackground}" />
+    <SolidColorBrush x:Key="MotionBrush.CardBackground" Color="{StaticResource MotionColor.CardBackground}" />
+    <SolidColorBrush x:Key="MotionBrush.CardSelected" Color="{StaticResource MotionColor.CardSelected}" />
+    <SolidColorBrush x:Key="MotionBrush.Border" Color="{StaticResource MotionColor.Border}" />
+    <SolidColorBrush x:Key="MotionBrush.TextPrimary" Color="{StaticResource MotionColor.TextPrimary}" />
+    <SolidColorBrush x:Key="MotionBrush.TextSecondary" Color="{StaticResource MotionColor.TextSecondary}" />
+    <SolidColorBrush x:Key="MotionBrush.Accent" Color="{StaticResource MotionColor.Accent}" />
+    <SolidColorBrush x:Key="MotionBrush.Success" Color="{StaticResource MotionColor.Success}" />
+    <SolidColorBrush x:Key="MotionBrush.Warning" Color="{StaticResource MotionColor.Warning}" />
+    <SolidColorBrush x:Key="MotionBrush.Danger" Color="{StaticResource MotionColor.Danger}" />
+    <SolidColorBrush x:Key="MotionBrush.Disabled" Color="{StaticResource MotionColor.Disabled}" />
+    <SolidColorBrush x:Key="MotionBrush.ButtonHover" Color="{StaticResource MotionColor.ButtonHover}" />
+    <SolidColorBrush x:Key="MotionBrush.LightText" Color="#FFFFFFFF" />
+</ResourceDictionary>

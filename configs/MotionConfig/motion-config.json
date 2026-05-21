@@ -1,0 +1,73 @@
+﻿{
+    "Axes":  [
+                 {
+                     "AxisName":  "X",
+                     "AxisNo":  0,
+                     "MotionCardName":  "Googol-1",
+                     "VelocityRatio":  0.5,
+                     "TargetPosition":  10,
+                     "RelativeDistance":  1,
+                     "HomeTimeout":  30
+                 },
+                 {
+                     "AxisName":  "Y",
+                     "AxisNo":  1,
+                     "MotionCardName":  "Sim-1",
+                     "VelocityRatio":  0.5,
+                     "TargetPosition":  10,
+                     "RelativeDistance":  1,
+                     "HomeTimeout":  30
+                 },
+                 {
+                     "AxisName":  "Z",
+                     "AxisNo":  2,
+                     "MotionCardName":  "Sim-1",
+                     "VelocityRatio":  0.5,
+                     "TargetPosition":  10,
+                     "RelativeDistance":  1,
+                     "HomeTimeout":  30
+                 },
+                 {
+                     "AxisName":  "Axis",
+                     "AxisNo":  3,
+                     "MotionCardName":  "Sim-1",
+                     "VelocityRatio":  0.5,
+                     "TargetPosition":  10,
+                     "RelativeDistance":  1,
+                     "HomeTimeout":  30
+                 }
+             ],
+    "IOs":  [
+                {
+                    "Name":  "DI0",
+                    "CardIndex":  0,
+                    "PointNo":  0,
+                    "IsOutput":  false
+                },
+                {
+                    "Name":  "DI1",
+                    "CardIndex":  0,
+                    "PointNo":  1,
+                    "IsOutput":  false
+                },
+                {
+                    "Name":  "DO0",
+                    "CardIndex":  0,
+                    "PointNo":  0,
+                    "IsOutput":  true
+                },
+                {
+                    "Name":  "DO1",
+                    "CardIndex":  0,
+                    "PointNo":  1,
+                    "IsOutput":  true
+                }
+            ],
+    "Coordinates":  [
+
+                    ],
+    "Positions":  [
+
+                  ],
+    "GoogolCore":  1
+}

@@ -1,0 +1,130 @@
+<UserControl x:Class="MotionStudio.App.Views.MotionProcessBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:hc="https://handyorg.github.io/handycontrol">
+    <Border Style="{StaticResource MotionPanelBorderStyle}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <DockPanel>
+                <TextBlock Text="流程区" Style="{StaticResource MotionSectionTitleStyle}" />
+                <TextBlock DockPanel.Dock="Right"
+                           Text="{Binding CurrentProject.Modules.Count, StringFormat=模块 {0}}"
+                           Style="{StaticResource MotionMutedTextStyle}"
+                           HorizontalAlignment="Right" />
+            </DockPanel>
+
+            <ListBox x:Name="ProcessList"
+                     Grid.Row="1"
+                     ItemsSource="{Binding CurrentProject.Modules}"
+                     SelectedItem="{Binding SelectedModule, Mode=TwoWay}"
+                     AlternationCount="100000"
+                     AllowDrop="True"
+                     Style="{StaticResource MotionProcessListBoxStyle}"
+                     ItemContainerStyle="{StaticResource MotionProcessListBoxItemStyle}"
+                     PreviewMouseLeftButtonDown="ProcessList_PreviewMouseLeftButtonDown"
+                     PreviewMouseMove="ProcessList_PreviewMouseMove"
+                     PreviewMouseRightButtonDown="ProcessList_PreviewMouseRightButtonDown"
+                     DragOver="ProcessList_DragOver"
+                     Drop="ProcessList_Drop">
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="删除模块"
+                                  Command="{Binding PlacementTarget.DataContext.DeleteSelectedCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}" />
+                        <MenuItem Header="禁用/启用模块"
+                                  Command="{Binding PlacementTarget.DataContext.ToggleSelectedCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}" />
+                        <Separator />
+                        <MenuItem Header="复制模块"
+                                  Command="{Binding PlacementTarget.DataContext.CopySelectedCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}" />
+                        <MenuItem Header="粘贴模块"
+                                  Command="{Binding PlacementTarget.DataContext.PasteCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}" />
+                        <Separator />
+                        <MenuItem Header="单步执行此模块"
+                                  Command="{Binding PlacementTarget.DataContext.StepSelectedCommand, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}" />
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                     
+                            <Border Style="{StaticResource MotionInnerCardBorderStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="48" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="190" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource FlowIndexConverter}}"
+                                               Style="{StaticResource MotionProcessIndexTextStyle}" />
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Param.ModuleName}"
+                                                   Foreground="{StaticResource MotionBrush.TextPrimary}"
+                                                   FontWeight="SemiBold" />
+                                        <Grid Margin="0,5,16,0">
+                                            <TextBox Text="{Binding Param.Remark, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                                     MinHeight="30"
+                                                     MaxLines="2"
+                                                     TextWrapping="Wrap"
+                                                     Padding="7,4"
+                                                     BorderBrush="{StaticResource MotionBrush.Border}"
+                                                     Foreground="{StaticResource MotionBrush.TextPrimary}" />
+                                            <TextBlock Text="输入备注，例如：移动到拍照位置"
+                                                       Margin="9,6,0,0"
+                                                       IsHitTestVisible="False">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MotionMutedTextStyle}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Param.Remark}" Value="">
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Grid>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <hc:LoadingCircle Width="18"
+                                                          Height="18"
+                                                          Margin="0,0,0,4"
+                                                          HorizontalAlignment="Right"
+                                                          Visibility="{Binding Param.IsRunning, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <hc:Tag Content="启用" Margin="0,0,6,0">
+                                                <hc:Tag.Style>
+                                                    <Style TargetType="{x:Type hc:Tag}">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                        <Setter Property="Foreground" Value="{StaticResource MotionBrush.TextPrimary}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Param.IsEnabled}" Value="False">
+                                                                <Setter Property="Content" Value="禁用" />
+                                                                <Setter Property="Foreground" Value="{StaticResource MotionBrush.Disabled}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </hc:Tag.Style>
+                                            </hc:Tag>
+                                            <TextBlock Text="{Binding Param.CostTimeMs, StringFormat={}{0} ms}"
+                                                       Style="{StaticResource MotionMutedTextStyle}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Param.Message}"
+                                                   Style="{StaticResource MotionMutedTextStyle}"
+                                                   TextAlignment="Right"
+                                                   MaxWidth="180"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </Border>
+</UserControl>

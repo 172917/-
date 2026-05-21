@@ -1,0 +1,378 @@
+<UserControl x:Class="MotionStudio.App.Views.SingleAxisDebugView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:hc="https://handyorg.github.io/handycontrol">
+    <UserControl.Resources>
+        <Style x:Key="AxisCompactButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource MotionToolbarButtonStyle}">
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Margin" Value="3,0" />
+            <Setter Property="Padding" Value="6,0" />
+        </Style>
+
+        <Style x:Key="AxisCompactRunButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource MotionRunButtonStyle}">
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Margin" Value="3,0" />
+            <Setter Property="Padding" Value="6,0" />
+        </Style>
+
+        <Style x:Key="AxisOperationButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource MotionToolbarButtonStyle}">
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="Padding" Value="8,0" />
+        </Style>
+
+        <Style x:Key="AxisOperationRunButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource MotionRunButtonStyle}">
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="Padding" Value="8,0" />
+        </Style>
+
+        <Style x:Key="AxisOperationStopButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource MotionStopButtonStyle}">
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="Padding" Value="8,0" />
+        </Style>
+
+        <Style x:Key="AxisOperationEmergencyButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource MotionEmergencyButtonStyle}">
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="Padding" Value="8,0" />
+        </Style>
+
+        <Style x:Key="AxisListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Margin" Value="0,4" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Foreground" Value="{StaticResource MotionBrush.TextPrimary}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                        <Border x:Name="ItemBorder"
+                                Background="{StaticResource MotionBrush.CardBackground}"
+                                BorderBrush="{StaticResource MotionBrush.Border}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="10"
+                                MinHeight="62">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource MotionBrush.CardSelected}" />
+                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{StaticResource MotionBrush.Accent}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{StaticResource MotionBrush.Accent}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AxisStatusCardStyle" TargetType="{x:Type Border}">
+            <Setter Property="Background" Value="{StaticResource MotionBrush.CardBackground}" />
+            <Setter Property="BorderBrush" Value="{StaticResource MotionBrush.Border}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="MinHeight" Value="62" />
+        </Style>
+
+        <Style x:Key="AxisGoodBoolValueStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="Text" Value="否" />
+            <Setter Property="Foreground" Value="{StaticResource MotionBrush.TextPrimary}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="17" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding}" Value="True">
+                    <Setter Property="Text" Value="是" />
+                    <Setter Property="Foreground" Value="{StaticResource MotionBrush.Success}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AxisBadBoolValueStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="Text" Value="否" />
+            <Setter Property="Foreground" Value="{StaticResource MotionBrush.TextPrimary}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="17" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding}" Value="True">
+                    <Setter Property="Text" Value="是" />
+                    <Setter Property="Foreground" Value="{StaticResource MotionBrush.Danger}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AxisNumericValueStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="{StaticResource MotionBrush.TextPrimary}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="17" />
+        </Style>
+
+        <Style x:Key="AxisParameterTextBoxStyle" TargetType="{x:Type TextBox}">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Margin" Value="0,2,0,10" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="BorderBrush" Value="{StaticResource MotionBrush.Border}" />
+            <Setter Property="Foreground" Value="{StaticResource MotionBrush.TextPrimary}" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="350" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Style="{StaticResource MotionPanelBorderStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <DockPanel Margin="0,0,0,8">
+                    <TextBlock Text="轴列表" Style="{StaticResource MotionSectionTitleStyle}" />
+                    <TextBlock DockPanel.Dock="Right"
+                               Text="{Binding Axes.Count, StringFormat=轴 {0}}"
+                               Style="{StaticResource MotionMutedTextStyle}"
+                               VerticalAlignment="Center" />
+                </DockPanel>
+
+                <UniformGrid Grid.Row="1" Columns="4" Margin="-3,0,-3,10">
+                    <Button Content="新增" Style="{StaticResource AxisCompactButtonStyle}" Command="{Binding AddAxisCommand}" />
+                    <Button Content="复制" Style="{StaticResource AxisCompactButtonStyle}" Command="{Binding CopyAxisCommand}" />
+                    <Button Content="删除" Style="{StaticResource AxisCompactButtonStyle}" Command="{Binding DeleteAxisCommand}" />
+                    <Button Content="保存" Style="{StaticResource AxisCompactRunButtonStyle}" Command="{Binding SaveAxisConfigCommand}" />
+                </UniformGrid>
+
+                <ListBox Grid.Row="2"
+                         ItemsSource="{Binding Axes}"
+                         SelectedItem="{Binding SelectedAxis, Mode=TwoWay}"
+                         Style="{StaticResource MotionProcessListBoxStyle}"
+                         ItemContainerStyle="{StaticResource AxisListBoxItemStyle}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="44" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding AxisNo}"
+                                           Foreground="{StaticResource MotionBrush.Accent}"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding AxisName}"
+                                               Foreground="{StaticResource MotionBrush.TextPrimary}"
+                                               FontWeight="SemiBold"
+                                               FontSize="14" />
+                                    <TextBlock Style="{StaticResource MotionMutedTextStyle}">
+                                        <Run Text="运动卡 " />
+                                        <Run Text="{Binding MotionCardName}" />
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+
+        <Border Grid.Column="1" Style="{StaticResource MotionPanelBorderStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <DockPanel Margin="0,0,0,8">
+                    <TextBlock Text="{Binding SelectedAxisTitle}"
+                               Foreground="{StaticResource MotionBrush.TextPrimary}"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
+                    <hc:Tag DockPanel.Dock="Right"
+                            Content="{Binding ConnectionHint}"
+                            VerticalAlignment="Center" />
+                </DockPanel>
+
+                <UniformGrid Grid.Row="1" Columns="4" Margin="-4,0,-4,8">
+                    <Border Style="{StaticResource AxisStatusCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="伺服" Style="{StaticResource MotionMutedTextStyle}" />
+                            <TextBlock DataContext="{Binding CurrentState.ServoOn}" Style="{StaticResource AxisGoodBoolValueStyle}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource AxisStatusCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="回零" Style="{StaticResource MotionMutedTextStyle}" />
+                            <TextBlock DataContext="{Binding CurrentState.Homed}" Style="{StaticResource AxisGoodBoolValueStyle}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource AxisStatusCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="运动中" Style="{StaticResource MotionMutedTextStyle}" />
+                            <TextBlock DataContext="{Binding CurrentState.IsMoving}" Style="{StaticResource AxisGoodBoolValueStyle}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource AxisStatusCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="报警" Style="{StaticResource MotionMutedTextStyle}" />
+                            <TextBlock DataContext="{Binding CurrentState.Alarm}" Style="{StaticResource AxisBadBoolValueStyle}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource AxisStatusCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="正限位" Style="{StaticResource MotionMutedTextStyle}" />
+                            <TextBlock DataContext="{Binding CurrentState.PositiveLimit}" Style="{StaticResource AxisBadBoolValueStyle}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource AxisStatusCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="负限位" Style="{StaticResource MotionMutedTextStyle}" />
+                            <TextBlock DataContext="{Binding CurrentState.NegativeLimit}" Style="{StaticResource AxisBadBoolValueStyle}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource AxisStatusCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="当前位置" Style="{StaticResource MotionMutedTextStyle}" />
+                            <TextBlock Text="{Binding CurrentState.Position, StringFormat={}{0:F3}}" Style="{StaticResource AxisNumericValueStyle}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource AxisStatusCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="当前速度" Style="{StaticResource MotionMutedTextStyle}" />
+                            <TextBlock Text="{Binding CurrentState.Velocity, StringFormat={}{0:F3}}" Style="{StaticResource AxisNumericValueStyle}" />
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <Border Grid.Row="2" Style="{StaticResource MotionInnerCardBorderStyle}" Margin="0,0,0,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.2*" />
+                            <ColumnDefinition Width="1.2*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,0,16,0">
+                            <TextBlock Text="状态消息" Style="{StaticResource MotionMutedTextStyle}" />
+                            <TextBlock Text="{Binding CurrentState.Message, TargetNullValue=-}"
+                                       Foreground="{StaticResource MotionBrush.TextPrimary}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                            <TextBlock Text="操作消息" Style="{StaticResource MotionMutedTextStyle}" />
+                            <TextBlock Text="{Binding OperationMessage}"
+                                       Foreground="{StaticResource MotionBrush.TextPrimary}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="调试参数" Style="{StaticResource MotionMutedTextStyle}" />
+                            <TextBlock Foreground="{StaticResource MotionBrush.TextPrimary}">
+                                <Run Text="目标 " />
+                                <Run Text="{Binding SelectedAxis.TargetPosition, Mode=OneWay}" />
+                                <Run Text=" / 相对 " />
+                                <Run Text="{Binding SelectedAxis.RelativeDistance, Mode=OneWay}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="3"
+                        Background="{StaticResource MotionBrush.CardBackground}"
+                        BorderBrush="{StaticResource MotionBrush.Border}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="12"
+                        Margin="0,0,0,8">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="操作"
+                                   Foreground="{StaticResource MotionBrush.TextPrimary}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   Margin="0,0,0,6" />
+                        <UniformGrid Grid.Row="1" Columns="4" Margin="-4,0,-4,4">
+                            <Button Content="使能" Style="{StaticResource AxisOperationButtonStyle}" Command="{Binding ServoOnCommand}" />
+                            <Button Content="断使能" Style="{StaticResource AxisOperationButtonStyle}" Command="{Binding ServoOffCommand}" />
+                            <Button Content="回零" Style="{StaticResource AxisOperationButtonStyle}" Command="{Binding HomeCommand}" />
+                            <Button Content="停止" Style="{StaticResource AxisOperationStopButtonStyle}" Command="{Binding StopAxisCommand}" />
+                        </UniformGrid>
+                        <UniformGrid Grid.Row="2" Columns="5" Margin="-4,0,-4,0">
+                            <Button Content="绝对移动" Style="{StaticResource AxisOperationRunButtonStyle}" Command="{Binding AbsMoveCommand}" />
+                            <Button Content="相对移动" Style="{StaticResource AxisOperationRunButtonStyle}" Command="{Binding RelMoveCommand}" />
+                            <Button Content="Jog-" Style="{StaticResource AxisOperationButtonStyle}" Command="{Binding JogNegativeCommand}" />
+                            <Button Content="Jog+" Style="{StaticResource AxisOperationButtonStyle}" Command="{Binding JogPositiveCommand}" />
+                            <Button Content="急停" Style="{StaticResource AxisOperationEmergencyButtonStyle}" Command="{Binding EmergencyStopAxisCommand}" />
+                        </UniformGrid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <Border Grid.Column="2" Style="{StaticResource MotionPanelBorderStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="轴参数" Style="{StaticResource MotionSectionTitleStyle}" />
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel IsEnabled="{Binding HasSelectedAxis}">
+                        <TextBlock Text="轴名称" Style="{StaticResource MotionPropertyLabelStyle}" />
+                        <TextBox Text="{Binding SelectedAxis.AxisName, Mode=TwoWay}"
+                                 Style="{StaticResource AxisParameterTextBoxStyle}" />
+
+                        <TextBlock Text="轴号" Style="{StaticResource MotionPropertyLabelStyle}" />
+                        <TextBox Text="{Binding SelectedAxis.AxisNo, Mode=TwoWay}"
+                                 Style="{StaticResource AxisParameterTextBoxStyle}" />
+
+                        <TextBlock Text="运动卡" Style="{StaticResource MotionPropertyLabelStyle}" />
+                        <ComboBox ItemsSource="{Binding MotionCardNames}"
+                                  SelectedItem="{Binding SelectedAxis.MotionCardName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Height="32"
+                                  Margin="0,2,0,10" />
+
+                        <TextBlock Text="速度比例" Style="{StaticResource MotionPropertyLabelStyle}" />
+                        <TextBox Text="{Binding SelectedAxis.VelocityRatio, Mode=TwoWay}"
+                                 Style="{StaticResource AxisParameterTextBoxStyle}" />
+
+                        <TextBlock Text="目标位置" Style="{StaticResource MotionPropertyLabelStyle}" />
+                        <TextBox Text="{Binding SelectedAxis.TargetPosition, Mode=TwoWay}"
+                                 Style="{StaticResource AxisParameterTextBoxStyle}" />
+
+                        <TextBlock Text="相对距离 / Jog步长" Style="{StaticResource MotionPropertyLabelStyle}" />
+                        <TextBox Text="{Binding SelectedAxis.RelativeDistance, Mode=TwoWay}"
+                                 Style="{StaticResource AxisParameterTextBoxStyle}" />
+
+                        <TextBlock Text="回零/运动超时(s)" Style="{StaticResource MotionPropertyLabelStyle}" />
+                        <TextBox Text="{Binding SelectedAxis.HomeTimeout, Mode=TwoWay}"
+                                 Style="{StaticResource AxisParameterTextBoxStyle}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

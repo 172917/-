@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="HandyControl" Version="3.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="HandyControl">
+      <HintPath>..\..\..\HandyControl-v3.5.0-Release\net8.0\HandyControl.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <ProjectReference Include="..\MotionStudio.Core\MotionStudio.Core.csproj" />
+    <ProjectReference Include="..\MotionStudio.Motion\MotionStudio.Motion.csproj" />
+    <ProjectReference Include="..\MotionStudio.Modules.BuiltIn\MotionStudio.Modules.BuiltIn.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <Platforms>x64</Platforms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+</Project>
