@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run MotionStudio.App.exe",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "E:/control soft/src/MotionStudio.App/bin/x64/Debug/net8.0-windows/MotionStudio.App.exe",
+      "cwd": "E:/control soft/src/MotionStudio.App/bin/x64/Debug/net8.0-windows",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run MotionStudio.App.exe",
+      "type": "shell",
+      "command": "\"E:\\control soft\\src\\MotionStudio.App\\bin\\x64\\Debug\\net8.0-windows\\MotionStudio.App.exe\"",
+      "options": {
+        "cwd": "E:\\control soft\\src\\MotionStudio.App\\bin\\x64\\Debug\\net8.0-windows"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
