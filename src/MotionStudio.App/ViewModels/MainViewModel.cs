@@ -74,6 +74,7 @@ public sealed class MainViewModel : ObservableObject
         StepSelectedCommand = new AsyncRelayCommand(_ => StepSelectedAsync(), _ => ProcessBar.SelectedModule is not null && !_runtimeState.IsRunning);
         LoginCommand = new RelayCommand(_ => Login());
         LogoutCommand = new RelayCommand(_ => Logout(), _ => _authService.CurrentRole != UserRole.Operator);
+        ExportLogsCommand = new RelayCommand(_ => ExportLogs());
 
         ProcessBar.PropertyChanged += ProcessBarOnPropertyChanged;
         ProcessBar.StepRequested += async (_, module) => await StepModuleAsync(module).ConfigureAwait(true);
@@ -186,6 +187,8 @@ public sealed class MainViewModel : ObservableObject
     public ICommand LoginCommand { get; }
 
     public ICommand LogoutCommand { get; }
+
+    public ICommand ExportLogsCommand { get; }
 
     private void LoadPlugins()
     {
@@ -446,6 +449,19 @@ public sealed class MainViewModel : ObservableObject
         }
 
         RefreshPermissionDependentState();
+    }
+
+    private void ExportLogs()
+    {
+        try
+        {
+            var filePath = _logService.ExportToCsv();
+            _logService.Success("Log", $"运行日志已打印: {filePath}");
+        }
+        catch (Exception ex)
+        {
+            _logService.Error("Log", $"打印日志失败: {ex.Message}");
+        }
     }
 
     private async Task StepSelectedAsync()

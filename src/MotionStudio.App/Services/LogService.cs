@@ -1,4 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.IO;
+using System.Text;
 using System.Windows;
 using HandyControl.Controls;
 using MotionStudio.Core.Logging;
@@ -51,6 +54,37 @@ public sealed class LogService : ILogService
         }
     }
 
+    public string ExportToCsv()
+    {
+        var logDirectory = ResolveLogDirectory();
+        Directory.CreateDirectory(logDirectory);
+
+        var filePath = Path.Combine(
+            logDirectory,
+            $"MotionStudio_Log_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+
+        var entries = Logs
+            .OrderBy(entry => entry.Time)
+            .ToList();
+
+        var builder = new StringBuilder();
+        builder.AppendLine("时间,级别,来源,内容,API调用");
+
+        foreach (var entry in entries)
+        {
+            builder
+                .Append(ToCsvField(entry.Time.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture))).Append(',')
+                .Append(ToCsvField(entry.Level.ToString())).Append(',')
+                .Append(ToCsvField(entry.Source)).Append(',')
+                .Append(ToCsvField(entry.Message)).Append(',')
+                .Append(ToCsvField(entry.ApiCall))
+                .AppendLine();
+        }
+
+        File.WriteAllText(filePath, builder.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+        return filePath;
+    }
+
     private static void ShowGrowl(LogEntry entry)
     {
         var text = $"[{entry.Source}] {entry.Message}";
@@ -69,5 +103,28 @@ public sealed class LogService : ILogService
                 Growl.Info(text);
                 break;
         }
+    }
+
+    private static string ResolveLogDirectory()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "MotionStudio.sln"))
+                || File.Exists(Path.Combine(directory.FullName, "README.md")))
+            {
+                return Path.Combine(directory.FullName, "logs");
+            }
+
+            directory = directory.Parent;
+        }
+
+        return Path.Combine(AppContext.BaseDirectory, "logs");
+    }
+
+    private static string ToCsvField(string? value)
+    {
+        value ??= string.Empty;
+        return $"\"{value.Replace("\"", "\"\"")}\"";
     }
 }

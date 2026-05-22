@@ -8,7 +8,15 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <TextBlock Text="运行日志" Style="{StaticResource MotionSectionTitleStyle}" />
+            <DockPanel>
+                <Button DockPanel.Dock="Right"
+                        Content="打印日志"
+                        Style="{StaticResource MotionToolbarButtonStyle}"
+                        Command="{Binding ExportLogsCommand}"
+                        MinWidth="88"
+                        Margin="8,0,0,8" />
+                <TextBlock Text="运行日志" Style="{StaticResource MotionSectionTitleStyle}" />
+            </DockPanel>
 
             <DataGrid Grid.Row="1"
                       Style="{StaticResource MotionLogDataGridStyle}"

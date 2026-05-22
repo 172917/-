@@ -948,7 +948,7 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
             return false;
         }
 
-        if (axisNo < 0 || axisNo > short.MaxValue)
+        if (axisNo <= 0 || axisNo > short.MaxValue)
         {
             _lastMessage = $"Axis number out of range: {axisNo}.";
             return false;
@@ -961,13 +961,13 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
     private bool TryGetMask(int axisNo, out long mask)
     {
         mask = 0;
-        if (axisNo < 0 || axisNo >= 63)
+        if (axisNo <= 0 || axisNo > 63)
         {
             _lastMessage = $"Axis number out of mask range: {axisNo}.";
             return false;
         }
 
-        mask = 1L << axisNo;
+        mask = 1L << (axisNo - 1);
         return true;
     }
 
