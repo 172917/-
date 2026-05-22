@@ -22,14 +22,15 @@ public sealed class LogService : ILogService
 
     public void Error(string source, string message) => Write(LogLevel.Error, source, message);
 
-    public void Write(LogLevel level, string source, string message)
+    public void Write(LogLevel level, string source, string message, string apiCall = "")
     {
         var entry = new LogEntry
         {
             Time = DateTime.Now,
             Level = level,
             Source = source,
-            Message = message
+            Message = message,
+            ApiCall = apiCall ?? string.Empty
         };
 
         void AddLog()

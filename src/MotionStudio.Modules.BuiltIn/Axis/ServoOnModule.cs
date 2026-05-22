@@ -1,15 +1,13 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using MotionStudio.Core.Modules;
 using MotionStudio.Core.Plugins;
+using MotionStudio.Modules.BuiltIn.ModuleBinding;
 
 namespace MotionStudio.Modules.BuiltIn.Axis;
 
-/// <summary>
-/// 轴使能模块。
-/// </summary>
 [Category("轴控制")]
 [DisplayName("轴使能")]
-[Description("打开指定轴的伺服使能。")]
+[Description("打开指定轴的伺服使能")]
 [MotionModuleIcon("Axis")]
 public sealed class ServoOnModule : MotionModuleBase
 {
@@ -26,6 +24,7 @@ public sealed class ServoOnModule : MotionModuleBase
 
     [Category("轴参数")]
     [DisplayName("轴号")]
+    [Description("当 AxisName 有效时，运行时自动从配置覆盖")]
     public int AxisNo
     {
         get => _axisNo;
@@ -34,12 +33,12 @@ public sealed class ServoOnModule : MotionModuleBase
 
     public override async Task<ModuleResult> ExecuteAsync(MotionContext context, CancellationToken token)
     {
-        if (AxisNo < 0)
+        if (!ModuleBindingResolver.TryResolveAxis(context, AxisName, AxisNo, Param.MotionCardName, out var axis, out var error))
         {
-            return ModuleResult.Fail("轴号不能小于 0");
+            return ModuleResult.Fail(error);
         }
 
-        var ok = await context.GetMotionCard(Param.MotionCardName).ServoOnAsync(AxisNo).ConfigureAwait(false);
+        var ok = await context.GetMotionCard(axis.MotionCardName).ServoOnAsync(axis.AxisNo).ConfigureAwait(false);
         return ok ? ModuleResult.Ok("轴使能完成") : ModuleResult.Fail("轴使能失败");
     }
 }

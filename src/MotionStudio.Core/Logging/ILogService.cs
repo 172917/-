@@ -7,5 +7,5 @@ public interface ILogService
 {
     event EventHandler<LogEntry>? LogAdded;
 
-    void Write(LogLevel level, string source, string message);
+    void Write(LogLevel level, string source, string message, string apiCall = "");
 }

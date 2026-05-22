@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -183,10 +183,5 @@ public partial class MainWindow : HandyControl.Controls.Window
         public int Top;
         public int Right;
         public int Bottom;
-    }
-
-    private void Button_Click(object sender, RoutedEventArgs e)
-    {
-
     }
 }

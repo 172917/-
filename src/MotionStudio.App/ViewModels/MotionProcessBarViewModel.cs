@@ -13,14 +13,16 @@ public sealed class MotionProcessBarViewModel : ObservableObject
 {
     private readonly MotionProjectService _projectService;
     private readonly MotionRuntimeState _runtimeState;
+    private readonly Func<bool> _canEditAccessor;
     private MotionProject? _currentProject;
     private MotionModuleBase? _selectedModule;
     private MotionModuleBase? _copiedModule;
 
-    public MotionProcessBarViewModel(MotionProjectService projectService, MotionRuntimeState runtimeState)
+    public MotionProcessBarViewModel(MotionProjectService projectService, MotionRuntimeState runtimeState, Func<bool>? canEditAccessor = null)
     {
         _projectService = projectService;
         _runtimeState = runtimeState;
+        _canEditAccessor = canEditAccessor ?? (() => true);
         DeleteSelectedCommand = new RelayCommand(_ => DeleteSelected(), _ => CanEdit && SelectedModule is not null);
         ClearCommand = new RelayCommand(_ => ClearModules(), _ => CanEdit && CurrentProject is not null && CurrentProject.Modules.Count > 0);
         ToggleSelectedCommand = new RelayCommand(_ => ToggleSelected(), _ => CanEdit && SelectedModule is not null);
@@ -56,7 +58,7 @@ public sealed class MotionProcessBarViewModel : ObservableObject
         }
     }
 
-    public bool CanEdit => CurrentProject is not null && !_runtimeState.IsRunning;
+    public bool CanEdit => CurrentProject is not null && !_runtimeState.IsRunning && _canEditAccessor();
 
     public ICommand DeleteSelectedCommand { get; }
 

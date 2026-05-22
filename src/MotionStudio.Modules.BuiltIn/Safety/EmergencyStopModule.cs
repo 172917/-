@@ -13,6 +13,8 @@ namespace MotionStudio.Modules.BuiltIn.Safety;
 [MotionModuleIcon("ESTOP")]
 public sealed class EmergencyStopModule : MotionModuleBase
 {
+    public override bool BypassAxisFaultPreCheck => true;
+
     public override async Task<ModuleResult> ExecuteAsync(MotionContext context, CancellationToken token)
     {
         context.RuntimeState.IsEmergencyStop = true;

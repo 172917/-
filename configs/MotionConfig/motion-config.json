@@ -1,73 +1,140 @@
-﻿{
-    "Axes":  [
-                 {
-                     "AxisName":  "X",
-                     "AxisNo":  0,
-                     "MotionCardName":  "Googol-1",
-                     "VelocityRatio":  0.5,
-                     "TargetPosition":  10,
-                     "RelativeDistance":  1,
-                     "HomeTimeout":  30
-                 },
-                 {
-                     "AxisName":  "Y",
-                     "AxisNo":  1,
-                     "MotionCardName":  "Sim-1",
-                     "VelocityRatio":  0.5,
-                     "TargetPosition":  10,
-                     "RelativeDistance":  1,
-                     "HomeTimeout":  30
-                 },
-                 {
-                     "AxisName":  "Z",
-                     "AxisNo":  2,
-                     "MotionCardName":  "Sim-1",
-                     "VelocityRatio":  0.5,
-                     "TargetPosition":  10,
-                     "RelativeDistance":  1,
-                     "HomeTimeout":  30
-                 },
-                 {
-                     "AxisName":  "Axis",
-                     "AxisNo":  3,
-                     "MotionCardName":  "Sim-1",
-                     "VelocityRatio":  0.5,
-                     "TargetPosition":  10,
-                     "RelativeDistance":  1,
-                     "HomeTimeout":  30
-                 }
-             ],
-    "IOs":  [
-                {
-                    "Name":  "DI0",
-                    "CardIndex":  0,
-                    "PointNo":  0,
-                    "IsOutput":  false
-                },
-                {
-                    "Name":  "DI1",
-                    "CardIndex":  0,
-                    "PointNo":  1,
-                    "IsOutput":  false
-                },
-                {
-                    "Name":  "DO0",
-                    "CardIndex":  0,
-                    "PointNo":  0,
-                    "IsOutput":  true
-                },
-                {
-                    "Name":  "DO1",
-                    "CardIndex":  0,
-                    "PointNo":  1,
-                    "IsOutput":  true
-                }
-            ],
-    "Coordinates":  [
-
-                    ],
-    "Positions":  [
-
-                  ],
-    "GoogolCore":  1
+{
+  "MotionCards": [
+    {
+      "CardName": "Sim-1",
+      "CardType": "Sim",
+      "Enabled": true,
+      "DllPath": "",
+      "ConfigFilePath": "",
+      "AxisBaseIndex": 0,
+      "IoBaseIndex": 0,
+      "Description": "Default simulation motion card"
+    },
+    {
+      "CardName": "Googol-1",
+      "CardType": "Googol",
+      "Enabled": true,
+      "DllPath": "C:/Vendor/Googol/gts.dll",
+      "ConfigFilePath": "",
+      "AxisBaseIndex": 0,
+      "IoBaseIndex": 0,
+      "Description": "Googol card"
+    },
+    {
+      "CardName": "ACS-1",
+      "CardType": "Acs",
+      "Enabled": false,
+      "DllPath": "C:/Vendor/ACS/ACSCL_x64.dll",
+      "ConfigFilePath": "",
+      "AxisBaseIndex": 0,
+      "IoBaseIndex": 0,
+      "Description": "ACS card"
+    }
+  ],
+  "Axes": [
+    {
+      "AxisName": "X",
+      "AxisNo": 1,
+      "MotionCardName": "Googol-1",
+      "VelocityRatio": 0.5,
+      "TargetPosition": 10,
+      "RelativeDistance": 1,
+      "HomeTimeout": 30,
+      "AbsVelocity": 50,
+      "AbsAcceleration": 100,
+      "AbsDeceleration": 100,
+      "RelVelocity": 50,
+      "RelAcceleration": 100,
+      "RelDeceleration": 100,
+      "HomeVelocity": 30,
+      "HomeAcceleration": 80,
+      "HomeDeceleration": 80
+    },
+    {
+      "AxisName": "Y",
+      "AxisNo": 3,
+      "MotionCardName": "Googol-1",
+      "VelocityRatio": 0.5,
+      "TargetPosition": 10,
+      "RelativeDistance": 1,
+      "HomeTimeout": 30,
+      "AbsVelocity": 50,
+      "AbsAcceleration": 100,
+      "AbsDeceleration": 100,
+      "RelVelocity": 50,
+      "RelAcceleration": 100,
+      "RelDeceleration": 100,
+      "HomeVelocity": 30,
+      "HomeAcceleration": 80,
+      "HomeDeceleration": 80
+    },
+    {
+      "AxisName": "Z",
+      "AxisNo": 2,
+      "MotionCardName": "Googol-1",
+      "VelocityRatio": 0.5,
+      "TargetPosition": 10,
+      "RelativeDistance": 1,
+      "HomeTimeout": 30,
+      "AbsVelocity": 50,
+      "AbsAcceleration": 100,
+      "AbsDeceleration": 100,
+      "RelVelocity": 50,
+      "RelAcceleration": 100,
+      "RelDeceleration": 100,
+      "HomeVelocity": 30,
+      "HomeAcceleration": 80,
+      "HomeDeceleration": 80
+    },
+    {
+      "AxisName": "Axis",
+      "AxisNo": 1,
+      "MotionCardName": "Sim-1",
+      "VelocityRatio": 0.5,
+      "TargetPosition": 10,
+      "RelativeDistance": 1,
+      "HomeTimeout": 30,
+      "AbsVelocity": 50,
+      "AbsAcceleration": 100,
+      "AbsDeceleration": 100,
+      "RelVelocity": 50,
+      "RelAcceleration": 100,
+      "RelDeceleration": 100,
+      "HomeVelocity": 30,
+      "HomeAcceleration": 80,
+      "HomeDeceleration": 80
+    }
+  ],
+  "IOs": [
+    {
+      "Name": "DI0",
+      "MotionCardName": "",
+      "CardIndex": 0,
+      "PointNo": 0,
+      "IsOutput": false
+    },
+    {
+      "Name": "DI1",
+      "MotionCardName": "",
+      "CardIndex": 0,
+      "PointNo": 1,
+      "IsOutput": false
+    },
+    {
+      "Name": "DO0",
+      "MotionCardName": "",
+      "CardIndex": 0,
+      "PointNo": 0,
+      "IsOutput": true
+    },
+    {
+      "Name": "DO1",
+      "MotionCardName": "",
+      "CardIndex": 0,
+      "PointNo": 1,
+      "IsOutput": true
+    }
+  ],
+  "Coordinates": [],
+  "Positions": []
 }

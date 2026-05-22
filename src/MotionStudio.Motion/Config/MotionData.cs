@@ -1,14 +1,42 @@
-﻿namespace MotionStudio.Motion.Config;
+using MotionStudio.Motion.Cards;
+
+namespace MotionStudio.Motion.Config;
 
 /// <summary>
 /// 运动系统配置集合。
 /// </summary>
 public sealed class MotionData
 {
-    /// <summary>
-    /// 固高控制卡 core 参数，默认 1。
-    /// </summary>
-    public short GoogolCore { get; set; } = 1;
+    public List<MotionCardOptions> MotionCards { get; set; } = new()
+    {
+        new MotionCardOptions
+        {
+            CardName = "Sim-1",
+            CardType = MotionCardType.Sim,
+            Enabled = true,
+            Description = "默认仿真运动卡"
+        },
+        new MotionCardOptions
+        {
+            CardName = "Googol-1",
+            CardType = MotionCardType.Googol,
+            Enabled = false,
+            DllPath = "C:/Vendor/Googol/gts.dll",
+            AxisBaseIndex = 0,
+            IoBaseIndex = 0,
+            Description = "固高运动卡示例配置（默认禁用）"
+        },
+        new MotionCardOptions
+        {
+            CardName = "ACS-1",
+            CardType = MotionCardType.Acs,
+            Enabled = false,
+            DllPath = "C:/Vendor/ACS/ACSCL_x64.dll",
+            AxisBaseIndex = 0,
+            IoBaseIndex = 0,
+            Description = "ACS 运动卡示例配置（默认禁用）"
+        }
+    };
 
     public List<AxisBaseConfig> Axes { get; set; } = new()
     {

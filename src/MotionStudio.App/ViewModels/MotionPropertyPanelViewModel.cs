@@ -11,17 +11,19 @@ namespace MotionStudio.App.ViewModels;
 public sealed class MotionPropertyPanelViewModel : ObservableObject
 {
     private readonly MotionRuntimeState _runtimeState;
+    private readonly Func<bool> _canEditAccessor;
     private MotionModuleBase? _selectedModule;
 
-    public MotionPropertyPanelViewModel(MotionRuntimeState runtimeState)
+    public MotionPropertyPanelViewModel(MotionRuntimeState runtimeState, Func<bool>? canEditAccessor = null)
     {
         _runtimeState = runtimeState;
+        _canEditAccessor = canEditAccessor ?? (() => true);
         _runtimeState.PropertyChanged += (_, _) => OnPropertyChanged(nameof(CanEdit));
     }
 
     public ObservableCollection<string> MotionCardNames { get; } = new();
 
-    public bool CanEdit => !_runtimeState.IsRunning;
+    public bool CanEdit => !_runtimeState.IsRunning && _canEditAccessor();
 
     public MotionModuleBase? SelectedModule
     {

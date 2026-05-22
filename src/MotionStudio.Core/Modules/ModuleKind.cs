@@ -9,5 +9,6 @@ public enum ModuleKind
     If,
     EndIf,
     Loop,
+    LoopEnd,
     SubProcess
 }

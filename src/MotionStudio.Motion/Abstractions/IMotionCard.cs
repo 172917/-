@@ -17,13 +17,52 @@ public interface IMotionCard
 
     Task<bool> HomeAsync(int axisNo, double timeout);
 
-    Task<bool> AbsMoveAsync(int axisNo, double position, double velRatio, double timeout, CancellationToken token);
+    Task<bool> AbsMoveAsync(
+        int axisNo,
+        double position,
+        double velocity,
+        double acceleration,
+        double deceleration,
+        double smoothTime,
+        double timeout,
+        CancellationToken token);
 
-    Task<bool> RelMoveAsync(int axisNo, double distance, double velRatio, double timeout, CancellationToken token);
+    Task<bool> RelMoveAsync(
+        int axisNo,
+        double distance,
+        double velocity,
+        double acceleration,
+        double deceleration,
+        double smoothTime,
+        double timeout,
+        CancellationToken token);
+
+    Task<bool> JogStartAsync(
+        int axisNo,
+        int direction,
+        double velocity,
+        double acceleration,
+        double deceleration,
+        double smoothTime,
+        CancellationToken token = default);
+
+    Task<bool> PrepareJogModeAsync(int axisNo);
+
+    Task<bool> PrepareTrapModeAsync(int axisNo);
+
+    Task<long?> GetPlannedPositionAsync(int axisNo, CancellationToken token = default);
 
     Task<bool> StopAxisAsync(int axisNo, bool emergency = false);
 
     Task<bool> StopAllAsync(bool emergency = false);
+
+    Task<bool> ClearAlarmAsync(int axisNo, CancellationToken token = default);
+
+    Task<bool> ClearAllAlarmAsync(CancellationToken token = default);
+
+    Task<bool> ZeroPositionAsync(int axisNo, CancellationToken token = default);
+
+    Task<bool> ResetControllerAsync(CancellationToken token = default);
 
     double GetAxisPosition(int axisNo);
 

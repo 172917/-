@@ -1,0 +1,302 @@
+{
+  "format": 1,
+  "restore": {
+    "E:\\control soft\\src\\MotionStudio.App\\MotionStudio.App.csproj": {}
+  },
+  "projects": {
+    "E:\\control soft\\src\\MotionStudio.App\\MotionStudio.App.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "E:\\control soft\\src\\MotionStudio.App\\MotionStudio.App.csproj",
+        "projectName": "MotionStudio.App",
+        "projectPath": "E:\\control soft\\src\\MotionStudio.App\\MotionStudio.App.csproj",
+        "packagesPath": "C:\\Users\\13792\\.nuget\\packages\\",
+        "outputPath": "E:/control soft/_build_verify/obj_app/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\13792\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0-windows"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0-windows": {
+            "framework": "net8.0-windows7.0",
+            "targetAlias": "net8.0-windows",
+            "projectReferences": {
+              "E:\\control soft\\src\\MotionStudio.Core\\MotionStudio.Core.csproj": {
+                "projectPath": "E:\\control soft\\src\\MotionStudio.Core\\MotionStudio.Core.csproj"
+              },
+              "E:\\control soft\\src\\MotionStudio.Modules.BuiltIn\\MotionStudio.Modules.BuiltIn.csproj": {
+                "projectPath": "E:\\control soft\\src\\MotionStudio.Modules.BuiltIn\\MotionStudio.Modules.BuiltIn.csproj"
+              },
+              "E:\\control soft\\src\\MotionStudio.Motion\\MotionStudio.Motion.csproj": {
+                "projectPath": "E:\\control soft\\src\\MotionStudio.Motion\\MotionStudio.Motion.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.300"
+      },
+      "frameworks": {
+        "net8.0-windows": {
+          "framework": "net8.0-windows7.0",
+          "targetAlias": "net8.0-windows",
+          "dependencies": {
+            "HandyControl": {
+              "target": "Package",
+              "version": "[3.5.1, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            },
+            "Microsoft.WindowsDesktop.App.WPF": {
+              "privateAssets": "none"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "E:\\control soft\\src\\MotionStudio.Core\\MotionStudio.Core.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "E:\\control soft\\src\\MotionStudio.Core\\MotionStudio.Core.csproj",
+        "projectName": "MotionStudio.Core",
+        "projectPath": "E:\\control soft\\src\\MotionStudio.Core\\MotionStudio.Core.csproj",
+        "packagesPath": "C:\\Users\\13792\\.nuget\\packages\\",
+        "outputPath": "E:/control soft/_build_verify/obj_app/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\13792\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "framework": "net8.0",
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "E:\\control soft\\src\\MotionStudio.Motion\\MotionStudio.Motion.csproj": {
+                "projectPath": "E:\\control soft\\src\\MotionStudio.Motion\\MotionStudio.Motion.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.300"
+      },
+      "frameworks": {
+        "net8.0": {
+          "framework": "net8.0",
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "System.IO.Ports": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "E:\\control soft\\src\\MotionStudio.Modules.BuiltIn\\MotionStudio.Modules.BuiltIn.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "E:\\control soft\\src\\MotionStudio.Modules.BuiltIn\\MotionStudio.Modules.BuiltIn.csproj",
+        "projectName": "MotionStudio.Modules.BuiltIn",
+        "projectPath": "E:\\control soft\\src\\MotionStudio.Modules.BuiltIn\\MotionStudio.Modules.BuiltIn.csproj",
+        "packagesPath": "C:\\Users\\13792\\.nuget\\packages\\",
+        "outputPath": "E:/control soft/_build_verify/obj_app/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\13792\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "framework": "net8.0",
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "E:\\control soft\\src\\MotionStudio.Core\\MotionStudio.Core.csproj": {
+                "projectPath": "E:\\control soft\\src\\MotionStudio.Core\\MotionStudio.Core.csproj"
+              },
+              "E:\\control soft\\src\\MotionStudio.Motion\\MotionStudio.Motion.csproj": {
+                "projectPath": "E:\\control soft\\src\\MotionStudio.Motion\\MotionStudio.Motion.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.300"
+      },
+      "frameworks": {
+        "net8.0": {
+          "framework": "net8.0",
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "System.IO.Ports": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "E:\\control soft\\src\\MotionStudio.Motion\\MotionStudio.Motion.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "E:\\control soft\\src\\MotionStudio.Motion\\MotionStudio.Motion.csproj",
+        "projectName": "MotionStudio.Motion",
+        "projectPath": "E:\\control soft\\src\\MotionStudio.Motion\\MotionStudio.Motion.csproj",
+        "packagesPath": "C:\\Users\\13792\\.nuget\\packages\\",
+        "outputPath": "E:/control soft/_build_verify/obj_app/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\13792\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "framework": "net8.0",
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.300"
+      },
+      "frameworks": {
+        "net8.0": {
+          "framework": "net8.0",
+          "targetAlias": "net8.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

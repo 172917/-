@@ -1,15 +1,13 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using MotionStudio.Core.Modules;
 using MotionStudio.Core.Plugins;
+using MotionStudio.Modules.BuiltIn.ModuleBinding;
 
 namespace MotionStudio.Modules.BuiltIn.IO;
 
-/// <summary>
-/// 等待 DI 输入模块。
-/// </summary>
 [Category("IO控制")]
 [DisplayName("等待DI")]
-[Description("等待指定 DI 达到目标状态。")]
+[Description("等待指定 DI 到达目标状态")]
 [MotionModuleIcon("DI")]
 public sealed class WaitDiModule : MotionModuleBase
 {
@@ -43,22 +41,22 @@ public sealed class WaitDiModule : MotionModuleBase
 
     public override async Task<ModuleResult> ExecuteAsync(MotionContext context, CancellationToken token)
     {
-        if (string.IsNullOrWhiteSpace(DiName))
-        {
-            return ModuleResult.Fail("DI 名称不能为空");
-        }
-
         if (Timeout <= 0)
         {
             return ModuleResult.Fail("超时必须大于 0");
         }
 
+        if (!ModuleBindingResolver.TryResolveInput(context, DiName, Param.MotionCardName, out var input, out var error))
+        {
+            return ModuleResult.Fail(error);
+        }
+
         var deadline = DateTime.UtcNow.AddSeconds(Timeout);
-        var card = context.GetMotionCard(Param.MotionCardName);
+        var card = context.GetMotionCard(input.MotionCardName);
         while (DateTime.UtcNow < deadline)
         {
             token.ThrowIfCancellationRequested();
-            if (card.GetDI(DiName) == TargetValue)
+            if (card.GetDI(input.PointName) == TargetValue)
             {
                 return ModuleResult.Ok("DI 等待完成");
             }

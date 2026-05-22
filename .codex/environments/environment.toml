@@ -8,4 +8,4 @@ script = ""
 [[actions]]
 name = "运行"
 icon = "run"
-command = "& \"E:\\control soft\\src\\MotionStudio.App\\bin\\x64\\Debug\\net8.0-windows\\MotionStudio.App.exe\""
+command = "Start-Process \"E:\\control soft\\src\\MotionStudio.App\\bin\\x64\\Debug\\net8.0-windows\\MotionStudio.App.exe\""

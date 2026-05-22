@@ -1,5 +1,7 @@
+using MotionStudio.Core.Communication;
 using MotionStudio.Core.Engine;
 using MotionStudio.Core.Logging;
+using MotionStudio.Core.Services;
 using MotionStudio.Core.Variables;
 using MotionStudio.Motion.Abstractions;
 
@@ -26,6 +28,12 @@ public sealed class MotionContext
 
     public MotionRuntimeState RuntimeState { get; set; } = new();
 
+    public MotionConfigService MotionConfigService { get; set; } = new();
+
+    public ITcpClientService TcpClientService { get; set; } = new TcpClientService();
+
+    public ISerialPortService SerialPortService { get; set; } = new SerialPortService();
+
     public IMotionCard GetMotionCard(string? cardName)
     {
         var resolvedName = string.IsNullOrWhiteSpace(cardName) ? DefaultMotionCardName : cardName;
@@ -40,6 +48,16 @@ public sealed class MotionContext
     public bool AreAllMotionCardsConnected()
     {
         return MotionCards.Count > 0 && MotionCards.Values.All(card => card.IsConnected);
+    }
+
+    public string? TryGetMotionCardNameByIndex(int cardIndex)
+    {
+        if (cardIndex < 0 || cardIndex >= MotionCards.Count)
+        {
+            return null;
+        }
+
+        return MotionCards.Keys.ElementAt(cardIndex);
     }
 
     public async Task StopAllMotionCardsAsync(bool emergency)

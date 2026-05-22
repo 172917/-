@@ -1,15 +1,13 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using MotionStudio.Core.Modules;
 using MotionStudio.Core.Plugins;
+using MotionStudio.Modules.BuiltIn.ModuleBinding;
 
 namespace MotionStudio.Modules.BuiltIn.IO;
 
-/// <summary>
-/// 读取 DI 输入模块。
-/// </summary>
 [Category("IO控制")]
 [DisplayName("读取DI")]
-[Description("读取指定 DI 状态并写入变量表。")]
+[Description("读取指定 DI 状态并写入变量表")]
 [MotionModuleIcon("DI")]
 public sealed class ReadDiModule : MotionModuleBase
 {
@@ -34,18 +32,18 @@ public sealed class ReadDiModule : MotionModuleBase
 
     public override Task<ModuleResult> ExecuteAsync(MotionContext context, CancellationToken token)
     {
-        if (string.IsNullOrWhiteSpace(DiName))
-        {
-            return Task.FromResult(ModuleResult.Fail("DI 名称不能为空"));
-        }
-
         if (string.IsNullOrWhiteSpace(VariableName))
         {
             return Task.FromResult(ModuleResult.Fail("变量名称不能为空"));
         }
 
-        var value = context.GetMotionCard(Param.MotionCardName).GetDI(DiName);
+        if (!ModuleBindingResolver.TryResolveInput(context, DiName, Param.MotionCardName, out var input, out var error))
+        {
+            return Task.FromResult(ModuleResult.Fail(error));
+        }
+
+        var value = context.GetMotionCard(input.MotionCardName).GetDI(input.PointName);
         context.Variables.Set(VariableName, value);
-        return Task.FromResult(ModuleResult.Ok($"读取 {DiName}={value}"));
+        return Task.FromResult(ModuleResult.Ok($"读取 {input.ConfigName}={value}"));
     }
 }

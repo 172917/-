@@ -27,12 +27,14 @@ public sealed class MotionModuleBarViewModel : ObservableObject
     private readonly MotionPluginService _pluginService;
     private readonly Func<MotionProject?> _projectAccessor;
     private readonly MotionRuntimeState _runtimeState;
+    private readonly Func<bool> _canEditAccessor;
 
-    public MotionModuleBarViewModel(MotionPluginService pluginService, Func<MotionProject?> projectAccessor, MotionRuntimeState runtimeState)
+    public MotionModuleBarViewModel(MotionPluginService pluginService, Func<MotionProject?> projectAccessor, MotionRuntimeState runtimeState, Func<bool>? canEditAccessor = null)
     {
         _pluginService = pluginService;
         _projectAccessor = projectAccessor;
         _runtimeState = runtimeState;
+        _canEditAccessor = canEditAccessor ?? (() => true);
     }
 
     public ObservableCollection<ModuleCategoryGroup> ModuleGroups { get; } = new();
@@ -59,6 +61,6 @@ public sealed class MotionModuleBarViewModel : ObservableObject
 
     public bool CanStartDrag(MotionModuleInfo? moduleInfo)
     {
-        return moduleInfo is not null && _projectAccessor() is not null && !_runtimeState.IsRunning;
+        return moduleInfo is not null && _projectAccessor() is not null && !_runtimeState.IsRunning && _canEditAccessor();
     }
 }

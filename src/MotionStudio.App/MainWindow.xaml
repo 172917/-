@@ -28,19 +28,23 @@
                     MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
                 <DockPanel LastChildFill="True">
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <hc:Tag Content="{Binding CurrentRoleText}" Margin="0,0,8,0" />
+                        <Button Content="角色登录" Style="{StaticResource MotionToolbarButtonStyle}" Command="{Binding LoginCommand}" Margin="0,0,8,0" />
+                        <Button Content="退出角色" Style="{StaticResource MotionToolbarButtonStyle}" Command="{Binding LogoutCommand}" Margin="0,0,8,0" />
                         <hc:Tag Content="{Binding ProjectStateText}" Margin="0,0,8,0" />
                         <hc:Tag Content="{Binding MotionCardStateText}" Margin="0,0,8,0" />
-                        <TextBlock Text="{Binding RuntimeState.IsRunning, Converter={StaticResource BoolToRunTextConverter}, StringFormat=流程：{0}}"
+                        <TextBlock Text="{Binding RuntimeState.IsRunning, Converter={StaticResource BoolToRunTextConverter}, StringFormat=流程:{0}}"
                                    Foreground="{StaticResource MotionBrush.TextPrimary}"
                                    VerticalAlignment="Center" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Button Content="新建项目" Style="{StaticResource MotionToolbarButtonStyle}" Command="{Binding NewProjectCommand}" />
+                        <Button Content="模板新建" Style="{StaticResource MotionToolbarButtonStyle}" Command="{Binding NewProjectFromTemplateCommand}" />
                         <Button Content="打开项目" Style="{StaticResource MotionToolbarButtonStyle}" Command="{Binding OpenProjectCommand}" />
                         <Button Content="保存项目" Style="{StaticResource MotionToolbarButtonStyle}" Command="{Binding SaveProjectCommand}" />
                         <Separator Width="12" Background="Transparent" />
-                        <Button Content="初始化运动卡" Style="{StaticResource MotionToolbarButtonStyle}" Command="{Binding InitMotionCardCommand}" MinWidth="118" Click="Button_Click" />
+                        <Button Content="初始化运动卡" Style="{StaticResource MotionToolbarButtonStyle}" Command="{Binding InitMotionCardCommand}" MinWidth="118" />
                         <Button Content="启动流程" Style="{StaticResource MotionRunButtonStyle}" Command="{Binding RunProcessCommand}" />
                         <Button Content="停止流程" Style="{StaticResource MotionStopButtonStyle}" Command="{Binding StopProcessCommand}" />
                         <Button Content="急停" Style="{StaticResource MotionEmergencyButtonStyle}" Command="{Binding EmergencyStopCommand}" />
@@ -90,7 +94,7 @@
                         </Button>
                         <Button Content="单轴调试"
                                 Command="{Binding ShowSingleAxisDebugPageCommand}"
-                                Margin="0,0,0,8" Click="Button_Click">
+                                Margin="0,0,0,8">
                             <Button.Style>
                                 <Style TargetType="{x:Type Button}" BasedOn="{StaticResource MotionToolbarButtonStyle}">
                                     <Setter Property="MinWidth" Value="0" />
@@ -160,3 +164,4 @@
                     Panel.ZIndex="20" />
     </Grid>
 </hc:Window>
+

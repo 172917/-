@@ -25,6 +25,16 @@ public sealed class AxisState
 
     public double Velocity { get; set; }
 
+    public double PlannedPosition { get; set; }
+
+    public double PlannedVelocity { get; set; }
+
+    public double PlannedAcceleration { get; set; }
+
+    public double ActualAcceleration { get; set; }
+
+    public bool HasRealtimeTelemetry { get; set; }
+
     public string Message { get; set; } = string.Empty;
 
     public AxisState Clone()

@@ -1,15 +1,13 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using MotionStudio.Core.Modules;
 using MotionStudio.Core.Plugins;
+using MotionStudio.Modules.BuiltIn.ModuleBinding;
 
 namespace MotionStudio.Modules.BuiltIn.Axis;
 
-/// <summary>
-/// 轴回零模块。
-/// </summary>
 [Category("轴控制")]
 [DisplayName("回零")]
-[Description("驱动指定轴回零。")]
+[Description("驱动指定轴回零")]
 [MotionModuleIcon("Home")]
 public sealed class HomeModule : MotionModuleBase
 {
@@ -27,6 +25,7 @@ public sealed class HomeModule : MotionModuleBase
 
     [Category("轴参数")]
     [DisplayName("轴号")]
+    [Description("当 AxisName 有效时，运行时自动从配置覆盖")]
     public int AxisNo
     {
         get => _axisNo;
@@ -35,6 +34,7 @@ public sealed class HomeModule : MotionModuleBase
 
     [Category("安全")]
     [DisplayName("超时(s)")]
+    [Description("当 AxisName 有效时，<=0 将回退到轴配置超时")]
     public double Timeout
     {
         get => _timeout;
@@ -43,17 +43,18 @@ public sealed class HomeModule : MotionModuleBase
 
     public override async Task<ModuleResult> ExecuteAsync(MotionContext context, CancellationToken token)
     {
-        if (AxisNo < 0)
+        if (!ModuleBindingResolver.TryResolveAxis(context, AxisName, AxisNo, Param.MotionCardName, out var axis, out var error))
         {
-            return ModuleResult.Fail("轴号不能小于 0");
+            return ModuleResult.Fail(error);
         }
 
-        if (Timeout <= 0)
+        var timeout = Timeout > 0 ? Timeout : axis.HomeTimeout;
+        if (timeout <= 0)
         {
             return ModuleResult.Fail("超时必须大于 0");
         }
 
-        var ok = await context.GetMotionCard(Param.MotionCardName).HomeAsync(AxisNo, Timeout).ConfigureAwait(false);
+        var ok = await context.GetMotionCard(axis.MotionCardName).HomeAsync(axis.AxisNo, timeout).ConfigureAwait(false);
         return ok ? ModuleResult.Ok("回零完成") : ModuleResult.Fail("回零失败");
     }
 }

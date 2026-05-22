@@ -30,6 +30,7 @@
                     <TextBlock Text="运动卡" Style="{StaticResource MotionPropertyLabelStyle}" />
                     <ComboBox ItemsSource="{Binding MotionCardNames}"
                               SelectedItem="{Binding SelectedParam.MotionCardName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              IsEnabled="{Binding CanEdit}"
                               MinHeight="30"
                               Margin="0,0,0,8" />
                     <TextBlock Text="备注" Style="{StaticResource MotionPropertyLabelStyle}" />
@@ -48,6 +49,7 @@
 
             <hc:PropertyGrid Grid.Row="2"
                              Margin="0,8,0,0"
+                             IsEnabled="{Binding CanEdit}"
                              SelectedObject="{Binding SelectedModule}" />
         </Grid>
     </Border>

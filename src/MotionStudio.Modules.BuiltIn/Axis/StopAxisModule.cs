@@ -1,15 +1,13 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using MotionStudio.Core.Modules;
 using MotionStudio.Core.Plugins;
+using MotionStudio.Modules.BuiltIn.ModuleBinding;
 
 namespace MotionStudio.Modules.BuiltIn.Axis;
 
-/// <summary>
-/// 停止指定轴模块。
-/// </summary>
 [Category("轴控制")]
 [DisplayName("停止轴")]
-[Description("停止指定轴，可选择急停模式。")]
+[Description("停止指定轴，可选择急停模式")]
 [MotionModuleIcon("Stop")]
 public sealed class StopAxisModule : MotionModuleBase
 {
@@ -27,6 +25,7 @@ public sealed class StopAxisModule : MotionModuleBase
 
     [Category("轴参数")]
     [DisplayName("轴号")]
+    [Description("当 AxisName 有效时，运行时自动从配置覆盖")]
     public int AxisNo
     {
         get => _axisNo;
@@ -37,18 +36,20 @@ public sealed class StopAxisModule : MotionModuleBase
     [DisplayName("急停模式")]
     public bool Emergency
     {
-        get => _emergency;
-        set => SetModuleProperty(ref _emergency, value);
+            get => _emergency;
+            set => SetModuleProperty(ref _emergency, value);
     }
+
+    public override bool BypassAxisFaultPreCheck => true;
 
     public override async Task<ModuleResult> ExecuteAsync(MotionContext context, CancellationToken token)
     {
-        if (AxisNo < 0)
+        if (!ModuleBindingResolver.TryResolveAxis(context, AxisName, AxisNo, Param.MotionCardName, out var axis, out var error))
         {
-            return ModuleResult.Fail("轴号不能小于 0");
+            return ModuleResult.Fail(error);
         }
 
-        var ok = await context.GetMotionCard(Param.MotionCardName).StopAxisAsync(AxisNo, Emergency).ConfigureAwait(false);
+        var ok = await context.GetMotionCard(axis.MotionCardName).StopAxisAsync(axis.AxisNo, Emergency).ConfigureAwait(false);
         return ok ? ModuleResult.Ok("轴停止完成") : ModuleResult.Fail("轴停止失败");
     }
 }
