@@ -39,6 +39,8 @@ public sealed class FutureGoogolMotionCard : IMotionCard
 
     public Task<long?> GetPlannedPositionAsync(int axisNo, CancellationToken token = default) => Task.FromResult<long?>(null);
 
+    public Task<bool> JogStopAsync(int axisNo) => Task.FromResult(false);
+
     public Task<bool> StopAxisAsync(int axisNo, bool emergency = false) => Task.FromResult(false);
 
     public Task<bool> StopAllAsync(bool emergency = false) => Task.FromResult(false);

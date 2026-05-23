@@ -644,7 +644,9 @@ public sealed class SingleAxisDebugViewModel : ObservableObject
         try
         {
             BeginApiTraceScope(card);
-            var ok = await card.StopAxisAsync(SelectedAxis.AxisNo, emergency).ConfigureAwait(true);
+            var ok = isJogStop
+                ? await card.JogStopAsync(SelectedAxis.AxisNo).ConfigureAwait(true)
+                : await card.StopAxisAsync(SelectedAxis.AxisNo, emergency).ConfigureAwait(true);
             if (isJogStop)
             {
                 OperationMessage = ok ? "Jog stopped." : "Jog stop failed.";

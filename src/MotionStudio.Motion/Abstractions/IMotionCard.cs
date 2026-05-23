@@ -52,6 +52,8 @@ public interface IMotionCard
 
     Task<long?> GetPlannedPositionAsync(int axisNo, CancellationToken token = default);
 
+    Task<bool> JogStopAsync(int axisNo);
+
     Task<bool> StopAxisAsync(int axisNo, bool emergency = false);
 
     Task<bool> StopAllAsync(bool emergency = false);

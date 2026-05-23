@@ -191,6 +191,8 @@ public sealed class SimMotionCard : IMotionCard
         return Task.FromResult<long?>((long)Math.Round(axis.Position, MidpointRounding.AwayFromZero));
     }
 
+    public Task<bool> JogStopAsync(int axisNo) => StopAxisAsync(axisNo, false);
+
     public Task<bool> StopAxisAsync(int axisNo, bool emergency = false)
     {
         var axis = GetOrCreateAxis(axisNo);

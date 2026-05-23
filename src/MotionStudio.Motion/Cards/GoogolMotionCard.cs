@@ -15,6 +15,7 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
     private const short OpenReserved = 1;
     private const short InitAxis = 1;
     private const short InitAxisCount = 8;
+    private const long AllAxisMask = 0xFF;
     private const string CoreConfigFile = "gtn_core.cfg";
     private const int StatusBitAlarm = 1;
     private const int StatusBitPositiveLimit = 5;
@@ -314,12 +315,6 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
 
     public Task<bool> StopAxisAsync(int axisNo, bool emergency = false)
     {
-        if (emergency)
-        {
-            _lastMessage = "Emergency stop is not implemented for Googol adapter in current scope.";
-            return Task.FromResult(false);
-        }
-
         if (!TryGetProfile(axisNo, out var profile))
         {
             return Task.FromResult(false);
@@ -330,24 +325,20 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
             return Task.FromResult(false);
         }
 
-        var mode = GetAxisRunMode(axisNo);
-        if (mode == AxisRunMode.Trap)
+        var option = emergency ? mask : 0L;
+        return Task.FromResult(InvokeStop("StopAxis", mask, option, $"axis={profile}"));
+    }
+
+    public Task<bool> JogStopAsync(int axisNo)
+    {
+        if (!TryGetProfile(axisNo, out var profile))
         {
-            const long stopOption = 0;
-            var stopExpression = $"GTN_Stop({FixedCore},{mask},{stopOption})";
-            if (!TryInvokeApi("TrapStop", stopExpression, () => GTN_Stop(FixedCore, mask, stopOption), out var stopCode))
-            {
-                return Task.FromResult(false);
-            }
+            return Task.FromResult(false);
+        }
 
-            if (stopCode != 0)
-            {
-                _lastMessage = $"TrapStop failed at {stopExpression}, code={stopCode}.";
-                return Task.FromResult(false);
-            }
-
-            _lastMessage = $"TrapStop success, axis={profile}.";
-            return Task.FromResult(true);
+        if (!TryGetMask(axisNo, out var mask))
+        {
+            return Task.FromResult(false);
         }
 
         var setVelExpression = $"GTN_SetVel({FixedCore},{profile},0)";
@@ -378,7 +369,11 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
         return Task.FromResult(true);
     }
 
-    public Task<bool> StopAllAsync(bool emergency = false) => Task.FromResult(false);
+    public Task<bool> StopAllAsync(bool emergency = false)
+    {
+        var option = emergency ? AllAxisMask : 0L;
+        return Task.FromResult(InvokeStop("StopAll", AllAxisMask, option, "axis=1-8"));
+    }
 
     public Task<bool> ClearAlarmAsync(int axisNo, CancellationToken token = default) => Task.FromResult(false);
 
@@ -849,6 +844,30 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
         EnableAxisTelemetry(axisNo);
         _lastMessage =
             $"JogStart success: axis={profile}, vel={signedVel}, acc={jogPrm.acc}, dec={jogPrm.dec}, smooth={jogPrm.smooth}.";
+        return true;
+    }
+
+    private bool InvokeStop(string action, long mask, long option, string target)
+    {
+        if (!IsConnected)
+        {
+            _lastMessage = "Googol card is not connected, initialize first.";
+            return false;
+        }
+
+        var expression = $"GTN_Stop({FixedCore},{mask},{option})";
+        if (!TryInvokeApi(action, expression, () => GTN_Stop(FixedCore, mask, option), out var code))
+        {
+            return false;
+        }
+
+        if (code != 0)
+        {
+            _lastMessage = $"{action} failed at {expression}, code={code}, {target}.";
+            return false;
+        }
+
+        _lastMessage = $"{action} success: {target}, mask={mask}, option={option}.";
         return true;
     }
 

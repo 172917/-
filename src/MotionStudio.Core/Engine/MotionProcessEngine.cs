@@ -180,8 +180,10 @@ public sealed class MotionProcessEngine
     public async Task EmergencyStopAsync(MotionContext context)
     {
         context.RuntimeState.IsEmergencyStop = true;
+        BeginApiTraceScope(context.MotionCards.Values);
         await context.StopAllMotionCardsAsync(true).ConfigureAwait(true);
-        context.Logger.Write(LogLevel.Error, "Engine", "急停已触发");
+        var apiTrace = ConsumeApiTrace(context.MotionCards.Values);
+        context.Logger.Write(LogLevel.Error, "Engine", "急停已触发", apiTrace);
         RuntimeStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
