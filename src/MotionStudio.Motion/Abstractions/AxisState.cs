@@ -21,6 +21,14 @@ public sealed class AxisState
 
     public bool NegativeLimit { get; set; }
 
+    public bool Arrived { get; set; }
+
+    public bool EmergencyStop { get; set; }
+
+    public bool Stopped { get; set; }
+
+    public int StatusWord { get; set; }
+
     public double Position { get; set; }
 
     public double Velocity { get; set; }

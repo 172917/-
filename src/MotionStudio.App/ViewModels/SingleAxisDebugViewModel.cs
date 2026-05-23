@@ -217,9 +217,9 @@ public sealed class SingleAxisDebugViewModel : ObservableObject
     public bool SelectedAxisAlarm => CurrentState.Alarm;
     public bool SelectedAxisPositiveLimit => CurrentState.PositiveLimit;
     public bool SelectedAxisNegativeLimit => CurrentState.NegativeLimit;
-    public bool SelectedAxisArrived => !CurrentState.IsMoving && !CurrentState.Alarm;
-    public bool SelectedAxisEmergencyStop => _runtimeState.IsEmergencyStop;
-    public bool SelectedAxisStopped => !CurrentState.IsMoving;
+    public bool SelectedAxisArrived => CurrentState.Arrived;
+    public bool SelectedAxisEmergencyStop => CurrentState.EmergencyStop;
+    public bool SelectedAxisStopped => CurrentState.Stopped;
 
     public double PlannedPosition => GetPlannedPosition();
     public double ActualPosition => CurrentState.Position;
@@ -467,12 +467,12 @@ public sealed class SingleAxisDebugViewModel : ObservableObject
 
     private void SaveAxisConfig()
     {
+        ReindexAxisNosSafely();
         if (!ValidateAxisKeys())
         {
             return;
         }
 
-        ReindexAxisNos(Axes);
         _motionData.Axes = Axes.Select(CloneAxis).ToList();
         _configService.Save(_motionData);
         _configService.Reload();
@@ -522,7 +522,7 @@ public sealed class SingleAxisDebugViewModel : ObservableObject
         var oldIndex = Axes.IndexOf(SelectedAxis);
         SelectedAxis.PropertyChanged -= AxisOnPropertyChanged;
         Axes.Remove(SelectedAxis);
-        ReindexAxisNos(Axes);
+        ReindexAxisNosSafely();
         SelectedAxis = Axes.Count == 0 ? null : Axes[Math.Clamp(oldIndex, 0, Axes.Count - 1)];
         IsDirty = true;
         RefreshAxisState();
@@ -990,16 +990,16 @@ public sealed class SingleAxisDebugViewModel : ObservableObject
 
     private static void ReindexAxisNos(IEnumerable<AxisBaseConfig> axes)
     {
-        foreach (var group in axes.GroupBy(a => a.MotionCardName, StringComparer.OrdinalIgnoreCase))
-        {
-            var ordered = group
-                .OrderBy(a => a.AxisNo)
-                .ThenBy(a => a.AxisName, StringComparer.OrdinalIgnoreCase)
-                .ToList();
+        var indexedAxes = axes
+            .Select((axis, index) => new { Axis = axis, Index = index })
+            .ToList();
 
-            for (var i = 0; i < ordered.Count; i++)
+        foreach (var group in indexedAxes.GroupBy(item => item.Axis.MotionCardName, StringComparer.OrdinalIgnoreCase))
+        {
+            var nextAxisNo = 1;
+            foreach (var item in group.OrderBy(item => item.Index))
             {
-                ordered[i].AxisNo = i + 1;
+                item.Axis.AxisNo = nextAxisNo++;
             }
         }
     }

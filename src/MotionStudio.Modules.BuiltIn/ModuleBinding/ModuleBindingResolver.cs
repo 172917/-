@@ -46,9 +46,9 @@ internal static class ModuleBindingResolver
             return true;
         }
 
-        if (axisNo < 0)
+        if (axisNo <= 0)
         {
-            error = "轴号不能小于 0";
+            error = "轴号必须大于 0";
             return false;
         }
 

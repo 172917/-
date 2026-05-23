@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.IO;
 using System.Runtime.InteropServices;
 using MotionStudio.Motion.Abstractions;
 
@@ -15,6 +16,14 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
     private const short InitAxis = 1;
     private const short InitAxisCount = 8;
     private const string CoreConfigFile = "gtn_core.cfg";
+    private const int StatusBitAlarm = 1;
+    private const int StatusBitPositiveLimit = 5;
+    private const int StatusBitNegativeLimit = 6;
+    private const int StatusBitStopped = 7;
+    private const int StatusBitEmergencyStop = 8;
+    private const int StatusBitServoOn = 9;
+    private const int StatusBitMoving = 10;
+    private const int StatusBitArrived = 11;
     private readonly List<string> _apiTraceEntries = new();
     private readonly object _apiTraceLock = new();
     private readonly Dictionary<int, AxisRunMode> _axisRunModes = new();
@@ -76,8 +85,17 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
             return Task.FromResult(false);
         }
 
-        var loadExpression = $"GTN_LoadConfig({FixedCore},\"{CoreConfigFile}\")";
-        if (!TryInvokeApi("Init", loadExpression, () => GTN_LoadConfig(FixedCore, CoreConfigFile), out var loadCode))
+        var coreConfigPath = ResolveCoreConfigFilePath();
+        var loadExpression = $"GTN_LoadConfig({FixedCore},\"{coreConfigPath}\")";
+        if (!File.Exists(coreConfigPath))
+        {
+            IsConnected = false;
+            AddApiTrace($"{loadExpression} => FileNotFound");
+            _lastMessage = $"Init failed: config file not found: {coreConfigPath}.";
+            return Task.FromResult(false);
+        }
+
+        if (!TryInvokeApi("Init", loadExpression, () => GTN_LoadConfig(FixedCore, coreConfigPath), out var loadCode))
         {
             IsConnected = false;
             return Task.FromResult(false);
@@ -420,9 +438,13 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
         }
 
         var cache = GetOrCreateTelemetryCache(axisNo);
+        var statusFailure = TryReadAxisStatus(profile, cache, out var statusError)
+            ? null
+            : statusError;
+
         if (!cache.TelemetryEnabled)
         {
-            return new AxisState
+            var initialState = new AxisState
             {
                 AxisNo = axisNo,
                 Position = 0d,
@@ -432,11 +454,13 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
                 PlannedAcceleration = 0d,
                 ActualAcceleration = 0d,
                 HasRealtimeTelemetry = true,
-                Message = _lastMessage
+                Message = statusFailure ?? _lastMessage
             };
+            ApplyStatusWord(initialState, cache);
+            return initialState;
         }
 
-        string? firstFailure = null;
+        string? firstFailure = statusFailure;
 
         if (TryReadRealtimeValue(
                 "GetPrfPos",
@@ -552,7 +576,7 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
             firstFailure = actualAccError;
         }
 
-        return new AxisState
+        var state = new AxisState
         {
             AxisNo = axisNo,
             Position = cache.HasActualPosition ? cache.ActualPosition : 0d,
@@ -564,6 +588,8 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
             HasRealtimeTelemetry = true,
             Message = firstFailure ?? _lastMessage
         };
+        ApplyStatusWord(state, cache);
+        return state;
     }
 
     public bool GetDI(string name) => false;
@@ -938,6 +964,46 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
         }
     }
 
+    private bool TryReadAxisStatus(short profile, AxisTelemetryCache cache, out string error)
+    {
+        var expression = $"GTN_GetSts({FixedCore},{profile},out status,1,NULL)";
+        error = string.Empty;
+        try
+        {
+            var code = GTN_GetSts(FixedCore, profile, out var statusWord, 1, IntPtr.Zero);
+            if (code != 0)
+            {
+                error = $"GetSts failed at {expression}, code={code}.";
+                _lastMessage = error;
+                return false;
+            }
+
+            cache.StatusWord = statusWord;
+            cache.HasStatusWord = true;
+            return true;
+        }
+        catch (DllNotFoundException ex)
+        {
+            IsConnected = false;
+            error = $"GetSts failed: gts.dll missing. {ex.Message}";
+            _lastMessage = error;
+            return false;
+        }
+        catch (EntryPointNotFoundException ex)
+        {
+            error = $"GetSts failed: API entry not found. {ex.Message}";
+            _lastMessage = error;
+            return false;
+        }
+        catch (BadImageFormatException ex)
+        {
+            IsConnected = false;
+            error = $"GetSts failed: DLL architecture mismatch (x64 required). {ex.Message}";
+            _lastMessage = error;
+            return false;
+        }
+    }
+
     private bool TryGetProfile(int axisNo, out short profile)
     {
         profile = 0;
@@ -1013,6 +1079,34 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
         return value.ToString("0.################", CultureInfo.InvariantCulture);
     }
 
+    private static string ResolveCoreConfigFilePath()
+    {
+        return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, CoreConfigFile));
+    }
+
+    private static void ApplyStatusWord(AxisState state, AxisTelemetryCache cache)
+    {
+        if (!cache.HasStatusWord)
+        {
+            return;
+        }
+
+        state.StatusWord = cache.StatusWord;
+        state.ServoOn = IsStatusBitSet(cache.StatusWord, StatusBitServoOn);
+        state.IsMoving = IsStatusBitSet(cache.StatusWord, StatusBitMoving);
+        state.Alarm = IsStatusBitSet(cache.StatusWord, StatusBitAlarm);
+        state.PositiveLimit = IsStatusBitSet(cache.StatusWord, StatusBitPositiveLimit);
+        state.NegativeLimit = IsStatusBitSet(cache.StatusWord, StatusBitNegativeLimit);
+        state.Arrived = IsStatusBitSet(cache.StatusWord, StatusBitArrived);
+        state.EmergencyStop = IsStatusBitSet(cache.StatusWord, StatusBitEmergencyStop);
+        state.Stopped = IsStatusBitSet(cache.StatusWord, StatusBitStopped);
+    }
+
+    private static bool IsStatusBitSet(int statusWord, int bit)
+    {
+        return (statusWord & (1 << bit)) != 0;
+    }
+
     private sealed class AxisTelemetryCache
     {
         public bool TelemetryEnabled { get; set; }
@@ -1040,6 +1134,10 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
         public bool HasActualAcceleration { get; set; }
 
         public double ActualAcceleration { get; set; }
+
+        public bool HasStatusWord { get; set; }
+
+        public int StatusWord { get; set; }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -1113,6 +1211,9 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
 
     [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
     private static extern short GTN_GetAxisEncAcc(short core, short axis, out double pValue, short count, IntPtr pClock);
+
+    [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
+    private static extern short GTN_GetSts(short core, short axis, out int pSts, short count, IntPtr pClock);
 
     [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
     private static extern short GTN_Open(short type, short reserved);

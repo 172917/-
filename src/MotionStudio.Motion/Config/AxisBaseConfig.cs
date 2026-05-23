@@ -9,7 +9,7 @@ namespace MotionStudio.Motion.Config;
 public sealed class AxisBaseConfig : INotifyPropertyChanged
 {
     private string _axisName = "X";
-    private int _axisNo;
+    private int _axisNo = 1;
     private string _motionCardName = "Sim-1";
     private double _velocityRatio = 0.5;
     private double _targetPosition = 10;

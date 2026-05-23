@@ -14,7 +14,7 @@ public sealed class SimMotionCard : IMotionCard
     {
         foreach (var axisNo in new[] { 0, 1, 2, 3 })
         {
-            _axes[axisNo] = new AxisState { AxisNo = axisNo, AxisName = $"Axis{axisNo}" };
+            _axes[axisNo] = new AxisState { AxisNo = axisNo, AxisName = $"Axis{axisNo}", Arrived = true, Stopped = true };
             _axisSampleTime[axisNo] = DateTime.UtcNow;
         }
 
@@ -44,6 +44,7 @@ public sealed class SimMotionCard : IMotionCard
     {
         var axis = GetOrCreateAxis(axisNo);
         axis.ServoOn = true;
+        axis.EmergencyStop = false;
         axis.Message = "伺服已使能";
         return Task.FromResult(true);
     }
@@ -54,6 +55,7 @@ public sealed class SimMotionCard : IMotionCard
         axis.ServoOn = false;
         axis.IsMoving = false;
         axis.Velocity = 0;
+        axis.Stopped = true;
         axis.Message = "伺服已断使能";
         return Task.FromResult(true);
     }
@@ -68,6 +70,8 @@ public sealed class SimMotionCard : IMotionCard
         }
 
         axis.IsMoving = true;
+        axis.Arrived = false;
+        axis.Stopped = false;
         axis.Velocity = 1;
         try
         {
@@ -79,6 +83,8 @@ public sealed class SimMotionCard : IMotionCard
         finally
         {
             axis.IsMoving = false;
+            axis.Arrived = true;
+            axis.Stopped = true;
             axis.Velocity = 0;
         }
 
@@ -102,6 +108,8 @@ public sealed class SimMotionCard : IMotionCard
         }
 
         axis.IsMoving = true;
+        axis.Arrived = false;
+        axis.Stopped = false;
         var velRatio = Math.Clamp(velocity / 100d, 0.05, 1);
         var duration = EstimateDuration(axis.Position, position, velRatio, timeout);
         axis.Velocity = EstimateVelocity(axis.Position, position, duration);
@@ -115,6 +123,8 @@ public sealed class SimMotionCard : IMotionCard
         finally
         {
             axis.IsMoving = false;
+            axis.Arrived = true;
+            axis.Stopped = true;
             axis.Velocity = 0;
         }
     }
@@ -152,6 +162,8 @@ public sealed class SimMotionCard : IMotionCard
         var sign = direction >= 0 ? 1 : -1;
         UpdateAxisMotionState(axis);
         axis.IsMoving = true;
+        axis.Arrived = false;
+        axis.Stopped = false;
         axis.Velocity = sign * Math.Abs(velocity);
         axis.Message = $"Jog启动 dir={sign}, vel={Math.Abs(velocity):F3}";
         _axisSampleTime[axisNo] = DateTime.UtcNow;
@@ -185,6 +197,9 @@ public sealed class SimMotionCard : IMotionCard
         UpdateAxisMotionState(axis);
         axis.IsMoving = false;
         axis.Velocity = 0;
+        axis.Stopped = true;
+        axis.Arrived = !axis.Alarm;
+        axis.EmergencyStop = emergency;
         axis.Message = emergency ? "轴急停" : "轴停止";
         _axisSampleTime[axisNo] = DateTime.UtcNow;
         return Task.FromResult(true);
@@ -198,6 +213,9 @@ public sealed class SimMotionCard : IMotionCard
             {
                 axis.IsMoving = false;
                 axis.Velocity = 0;
+                axis.Stopped = true;
+                axis.Arrived = !axis.Alarm;
+                axis.EmergencyStop = emergency;
                 axis.Message = emergency ? "全部轴急停" : "全部轴停止";
             }
         }
@@ -218,6 +236,7 @@ public sealed class SimMotionCard : IMotionCard
             axis.Alarm = false;
             axis.PositiveLimit = false;
             axis.NegativeLimit = false;
+            axis.Arrived = !axis.IsMoving;
             axis.Message = "轴报警已复位";
             return Task.FromResult(true);
         }
@@ -233,6 +252,7 @@ public sealed class SimMotionCard : IMotionCard
                 axis.Alarm = false;
                 axis.PositiveLimit = false;
                 axis.NegativeLimit = false;
+                axis.Arrived = !axis.IsMoving;
                 axis.Message = "全部轴报警已复位";
             }
         }
@@ -253,6 +273,8 @@ public sealed class SimMotionCard : IMotionCard
             axis.Position = 0;
             axis.IsMoving = false;
             axis.Velocity = 0;
+            axis.Arrived = true;
+            axis.Stopped = true;
             axis.Message = "轴位置已清零";
             _axisSampleTime[axisNo] = DateTime.UtcNow;
             return Task.FromResult(true);
@@ -269,6 +291,8 @@ public sealed class SimMotionCard : IMotionCard
                 axis.Position = 0;
                 axis.IsMoving = false;
                 axis.Velocity = 0;
+                axis.Arrived = true;
+                axis.Stopped = true;
                 axis.Message = "全部轴位置已清零";
             }
         }
@@ -325,7 +349,7 @@ public sealed class SimMotionCard : IMotionCard
         {
             if (!_axes.TryGetValue(axisNo, out var axis))
             {
-                axis = new AxisState { AxisNo = axisNo, AxisName = $"Axis{axisNo}" };
+                axis = new AxisState { AxisNo = axisNo, AxisName = $"Axis{axisNo}", Arrived = true, Stopped = true };
                 _axes[axisNo] = axis;
                 _axisSampleTime[axisNo] = DateTime.UtcNow;
             }
@@ -347,6 +371,16 @@ public sealed class SimMotionCard : IMotionCard
         if (seconds > 0 && axis.IsMoving)
         {
             axis.Position += axis.Velocity * seconds;
+        }
+
+        axis.Stopped = !axis.IsMoving;
+        if (axis.IsMoving)
+        {
+            axis.Arrived = false;
+        }
+        else if (!axis.Alarm)
+        {
+            axis.Arrived = true;
         }
 
         _axisSampleTime[axis.AxisNo] = now;

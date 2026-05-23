@@ -575,7 +575,7 @@ public sealed class MotionProcessEngine
                 axisNos.Add(axisConfig.AxisNo);
             }
         }
-        else if (axisNoProperty?.GetValue(module) is int axisNo && axisNo >= 0)
+        else if (axisNoProperty?.GetValue(module) is int axisNo && axisNo > 0)
         {
             axisNos.Add(axisNo);
         }
@@ -583,7 +583,7 @@ public sealed class MotionProcessEngine
         {
             foreach (var property in module.GetType().GetProperties().Where(p => p.Name.EndsWith("AxisNo", StringComparison.OrdinalIgnoreCase)))
             {
-                if (property.GetValue(module) is int value && value >= 0)
+                if (property.GetValue(module) is int value && value > 0)
                 {
                     axisNos.Add(value);
                 }

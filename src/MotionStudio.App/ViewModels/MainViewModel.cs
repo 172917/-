@@ -672,6 +672,12 @@ public sealed class MainViewModel : ObservableObject
                 continue;
             }
 
+            if (axis.AxisNo <= 0)
+            {
+                errors.Add($"轴 {axisLabel} 的 AxisNo 必须大于 0。");
+                continue;
+            }
+
             if (!axisNosByCard.TryGetValue(axis.MotionCardName, out var axisNos))
             {
                 axisNos = new HashSet<int>();

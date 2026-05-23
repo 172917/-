@@ -40,9 +40,9 @@ public sealed class MotionData
 
     public List<AxisBaseConfig> Axes { get; set; } = new()
     {
-        new AxisBaseConfig { AxisName = "X", AxisNo = 0 },
-        new AxisBaseConfig { AxisName = "Y", AxisNo = 1 },
-        new AxisBaseConfig { AxisName = "Z", AxisNo = 2 }
+        new AxisBaseConfig { AxisName = "X", AxisNo = 1 },
+        new AxisBaseConfig { AxisName = "Y", AxisNo = 2 },
+        new AxisBaseConfig { AxisName = "Z", AxisNo = 3 }
     };
 
     public List<IOConfig> IOs { get; set; } = new()

@@ -52,7 +52,7 @@
     },
     {
       "AxisName": "Y",
-      "AxisNo": 3,
+      "AxisNo": 2,
       "MotionCardName": "Googol-1",
       "VelocityRatio": 0.5,
       "TargetPosition": 10,
@@ -70,7 +70,7 @@
     },
     {
       "AxisName": "Z",
-      "AxisNo": 2,
+      "AxisNo": 3,
       "MotionCardName": "Googol-1",
       "VelocityRatio": 0.5,
       "TargetPosition": 10,
