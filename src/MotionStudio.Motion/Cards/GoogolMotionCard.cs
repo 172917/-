@@ -6,7 +6,7 @@ using MotionStudio.Motion.Abstractions;
 namespace MotionStudio.Motion.Cards;
 
 /// <summary>
-/// 固高运动卡最小可用适配器：实现上下使能与Jog链路。
+/// 固高运动卡最小可用适配器：实现上下使能与Jog链路1。
 /// </summary>
 public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
 {
