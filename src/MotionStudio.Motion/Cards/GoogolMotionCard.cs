@@ -30,6 +30,9 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
     private readonly Dictionary<int, AxisRunMode> _axisRunModes = new();
     private readonly Dictionary<int, AxisTelemetryCache> _axisTelemetry = new();
     private readonly object _telemetryLock = new();
+    private readonly object _senseLock = new();
+    private ushort _limitSenseMask;
+    private ushort _encoderSenseMask;
     private string _lastMessage = "Googol card is not initialized.";
 
     public bool IsConnected { get; private set; }
@@ -160,7 +163,129 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
 
     public Task<bool> ServoOffAsync(int axisNo) => Task.FromResult(InvokeAxisCommand(axisNo, GTN_AxisOff, "ServoOff", "GTN_AxisOff"));
 
-    public Task<bool> HomeAsync(int axisNo, double timeout) => Task.FromResult(false);
+    public Task<bool> HomeAsync(int axisNo, double timeout)
+    {
+        return HomeAsync(axisNo, new HomeMotionOptions { Timeout = timeout }, CancellationToken.None);
+    }
+
+    public async Task<bool> HomeAsync(int axisNo, HomeMotionOptions options, CancellationToken token = default)
+    {
+        token.ThrowIfCancellationRequested();
+
+        if (!TryGetProfile(axisNo, out var profile))
+        {
+            return false;
+        }
+
+        if (!TryGetMask(axisNo, out var mask))
+        {
+            return false;
+        }
+
+        if (!TryNormalizeHomeOptions(options, out var normalizedOptions, out var validationError))
+        {
+            _lastMessage = validationError;
+            return false;
+        }
+
+        if (!InvokeHomePreparation(axisNo, profile, normalizedOptions))
+        {
+            return false;
+        }
+
+        var homePrm = CreateHomePrm();
+        var getHomePrmExpression = $"GT_GetHomePrm({profile},out THomePrm)";
+        if (!TryInvokeApi("Home", getHomePrmExpression, () => GT_GetHomePrm(profile, ref homePrm), out var getHomePrmCode))
+        {
+            return false;
+        }
+
+        if (getHomePrmCode != 0)
+        {
+            _lastMessage = $"Home failed at {getHomePrmExpression}, code={getHomePrmCode}.";
+            return false;
+        }
+
+        FillHomePrm(ref homePrm, normalizedOptions);
+
+        var goHomeExpression = BuildGoHomeTrace(profile, homePrm);
+        if (!TryInvokeApi("Home", goHomeExpression, () => GT_GoHome(profile, ref homePrm), out var goHomeCode))
+        {
+            return false;
+        }
+
+        if (goHomeCode != 0)
+        {
+            _lastMessage = $"Home failed at GT_GoHome, code={goHomeCode}, axis={profile}.";
+            return false;
+        }
+
+        SetAxisRunMode(axisNo, AxisRunMode.Home);
+        EnableAxisTelemetry(axisNo);
+
+        THomeStatus homeStatus = default;
+        var start = DateTime.UtcNow;
+        try
+        {
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+
+                var statusExpression = $"GT_GetHomeStatus({profile},out THomeStatus)";
+                if (!TryInvokeApi("Home", statusExpression, () => GT_GetHomeStatus(profile, ref homeStatus), out var statusCode))
+                {
+                    return false;
+                }
+
+                if (statusCode != 0)
+                {
+                    _lastMessage = $"Home failed at {statusExpression}, code={statusCode}, axis={profile}.";
+                    return false;
+                }
+
+                if (homeStatus.run == 0)
+                {
+                    break;
+                }
+
+                if (normalizedOptions.Timeout > 0 && (DateTime.UtcNow - start).TotalSeconds >= normalizedOptions.Timeout)
+                {
+                    InvokeStop("HomeTimeout", mask, 0L, $"axis={profile}");
+                    _lastMessage = $"Home timed out after {normalizedOptions.Timeout:F3}s, axis={profile}.";
+                    return false;
+                }
+
+                await Task.Delay(20, token).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            InvokeStop("HomeCancel", mask, 0L, $"axis={profile}");
+            throw;
+        }
+
+        if (homeStatus.error != 0)
+        {
+            _lastMessage = $"Home failed: axis={profile}, error={homeStatus.error}, stage={homeStatus.stage}.";
+            return false;
+        }
+
+        var zeroExpression = $"GT_ZeroPos({profile},1)";
+        if (!TryInvokeApi("Home", zeroExpression, () => GT_ZeroPos(profile, 1), out var zeroCode))
+        {
+            return false;
+        }
+
+        if (zeroCode != 0)
+        {
+            _lastMessage = $"Home failed at final GT_ZeroPos, code={zeroCode}, axis={profile}.";
+            return false;
+        }
+
+        MarkAxisHomed(axisNo);
+        _lastMessage = $"Home success: axis={profile}, mode={(short)normalizedOptions.Mode}, stage={homeStatus.stage}.";
+        return true;
+    }
 
     public Task<bool> AbsMoveAsync(
         int axisNo,
@@ -593,6 +718,255 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
 
     public bool SetDO(string name, bool value) => false;
 
+    private bool InvokeHomePreparation(int axisNo, short profile, HomeMotionOptions options)
+    {
+        if (!InvokeLegacyAxisCommand("Home", "GT_AlarmOff", profile, () => GT_AlarmOff(profile)))
+        {
+            return false;
+        }
+
+        if (!InvokeLegacyAxisCommand("Home", "GT_LmtsOn", profile, () => GT_LmtsOn(profile, -1)))
+        {
+            return false;
+        }
+
+        if (!ApplyLimitSense(axisNo, options))
+        {
+            return false;
+        }
+
+        if (!ApplyEncoderSense(axisNo, options))
+        {
+            return false;
+        }
+
+        if (!InvokeLegacyAxisCommand("Home", "GT_ClrSts", profile, () => GT_ClrSts(profile, 1)))
+        {
+            return false;
+        }
+
+        if (!InvokeLegacyAxisCommand("Home", "GT_ZeroPos", profile, () => GT_ZeroPos(profile, 1)))
+        {
+            return false;
+        }
+
+        return InvokeLegacyAxisCommand("Home", "GT_AxisOn", profile, () => GT_AxisOn(profile));
+    }
+
+    private bool InvokeLegacyAxisCommand(string action, string apiName, short axis, Func<short> invoke)
+    {
+        var expression = $"{apiName}({axis})";
+        if (!TryInvokeApi(action, expression, invoke, out var code))
+        {
+            return false;
+        }
+
+        if (code == 0)
+        {
+            return true;
+        }
+
+        _lastMessage = $"{action} failed at {apiName}, code={code}, axis={axis}.";
+        return false;
+    }
+
+    private bool ApplyLimitSense(int axisNo, HomeMotionOptions options)
+    {
+        if (axisNo is < 1 or > 8)
+        {
+            _lastMessage = $"Axis number out of GT_LmtSns bitmask range: {axisNo}.";
+            return false;
+        }
+
+        var axisBits = (ushort)(0x3 << (2 * (axisNo - 1)));
+        var axisMask = BuildLimitSenseMask(
+            axisNo,
+            options.PositiveLimitTriggerLevel == HomeSignalLevel.Low,
+            options.NegativeLimitTriggerLevel == HomeSignalLevel.Low);
+
+        ushort fullMask;
+        lock (_senseLock)
+        {
+            _limitSenseMask = (ushort)((_limitSenseMask & ~axisBits) | axisMask);
+            fullMask = _limitSenseMask;
+        }
+
+        var expression = $"GT_LmtSns({fullMask})";
+        if (!TryInvokeApi("Home", expression, () => GT_LmtSns(fullMask), out var code))
+        {
+            return false;
+        }
+
+        if (code == 0)
+        {
+            return true;
+        }
+
+        _lastMessage = $"Home failed at GT_LmtSns, code={code}, senseMask={fullMask}.";
+        return false;
+    }
+
+    private bool ApplyEncoderSense(int axisNo, HomeMotionOptions options)
+    {
+        if (axisNo is < 1 or > 8)
+        {
+            _lastMessage = $"Axis number out of GT_EncSns bitmask range: {axisNo}.";
+            return false;
+        }
+
+        var axisBit = (ushort)(1 << (axisNo - 1));
+        ushort fullMask;
+        lock (_senseLock)
+        {
+            if (options.EncoderDirection == HomeEncoderDirection.Negative)
+            {
+                _encoderSenseMask = (ushort)(_encoderSenseMask | axisBit);
+            }
+            else
+            {
+                _encoderSenseMask = (ushort)(_encoderSenseMask & ~axisBit);
+            }
+
+            fullMask = _encoderSenseMask;
+        }
+
+        var expression = $"GT_EncSns({fullMask})";
+        if (!TryInvokeApi("Home", expression, () => GT_EncSns(fullMask), out var code))
+        {
+            return false;
+        }
+
+        if (code == 0)
+        {
+            return true;
+        }
+
+        _lastMessage = $"Home failed at GT_EncSns, code={code}, senseMask={fullMask}.";
+        return false;
+    }
+
+    private static ushort BuildLimitSenseMask(int axis, bool positiveLimitLowActive, bool negativeLimitLowActive)
+    {
+        if (axis is < 1 or > 8)
+        {
+            throw new ArgumentOutOfRangeException(nameof(axis), "GT_LmtSns supports limit sense bits for axes 1 through 8.");
+        }
+
+        var positiveBit = 2 * (axis - 1);
+        var negativeBit = positiveBit + 1;
+        ushort mask = 0;
+
+        // GT_LmtSns takes a card-wide limit trigger-level bitmask, not an axis number.
+        // Limit+ uses bit 2 * (axis - 1), Limit- uses bit 2 * (axis - 1) + 1.
+        // A bit value of 0 means high-level active; a bit value of 1 means low-level active.
+        if (positiveLimitLowActive)
+        {
+            mask |= (ushort)(1 << positiveBit);
+        }
+
+        if (negativeLimitLowActive)
+        {
+            mask |= (ushort)(1 << negativeBit);
+        }
+
+        return mask;
+    }
+
+    private static bool TryNormalizeHomeOptions(HomeMotionOptions options, out HomeMotionOptions normalized, out string error)
+    {
+        normalized = options;
+        error = string.Empty;
+
+        if (!TryNormalizeInt32(options.SearchHomeDistance, nameof(options.SearchHomeDistance), out _))
+        {
+            error = $"{nameof(options.SearchHomeDistance)} is out of Int32 range: {options.SearchHomeDistance}.";
+            return false;
+        }
+
+        if (!TryNormalizeInt32(options.EscapeStep, nameof(options.EscapeStep), out _))
+        {
+            error = $"{nameof(options.EscapeStep)} is out of Int32 range: {options.EscapeStep}.";
+            return false;
+        }
+
+        normalized = options with
+        {
+            Mode = Enum.IsDefined(options.Mode) ? options.Mode : HomeReferenceMode.Home,
+            SearchDirection = Enum.IsDefined(options.SearchDirection) ? options.SearchDirection : HomeSearchDirection.Positive,
+            EncoderDirection = Enum.IsDefined(options.EncoderDirection) ? options.EncoderDirection : HomeEncoderDirection.Positive,
+            PositiveLimitTriggerLevel = Enum.IsDefined(options.PositiveLimitTriggerLevel) ? options.PositiveLimitTriggerLevel : HomeSignalLevel.Low,
+            NegativeLimitTriggerLevel = Enum.IsDefined(options.NegativeLimitTriggerLevel) ? options.NegativeLimitTriggerLevel : HomeSignalLevel.Low,
+            CaptureEdge = Enum.IsDefined(options.CaptureEdge) ? options.CaptureEdge : HomeCaptureEdge.Falling,
+            VelHigh = NormalizePositive(options.VelHigh, 30d),
+            VelLow = NormalizePositive(options.VelLow, 1d),
+            Acc = NormalizePositive(options.Acc, 80d),
+            Dec = NormalizePositive(options.Dec, 80d),
+            SearchHomeDistance = Math.Max(0L, options.SearchHomeDistance),
+            EscapeStep = Math.Max(0L, options.EscapeStep),
+            Timeout = NormalizePositive(options.Timeout, 30d)
+        };
+
+        return true;
+    }
+
+    private static bool TryNormalizeInt32(long value, string name, out int converted)
+    {
+        converted = 0;
+        if (value < 0 || value > int.MaxValue)
+        {
+            return false;
+        }
+
+        converted = (int)value;
+        return true;
+    }
+
+    private static double NormalizePositive(double value, double fallback)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0)
+        {
+            return fallback;
+        }
+
+        return value;
+    }
+
+    private static THomePrm CreateHomePrm()
+    {
+        return new THomePrm
+        {
+            pad1 = new short[3],
+            pad2 = new short[3],
+            pad3 = new int[2]
+        };
+    }
+
+    private static void FillHomePrm(ref THomePrm homePrm, HomeMotionOptions options)
+    {
+        homePrm.mode = (short)options.Mode;
+        homePrm.moveDir = (short)options.SearchDirection;
+        homePrm.indexDir = (short)options.SearchDirection;
+        homePrm.edge = (short)options.CaptureEdge;
+        homePrm.velHigh = options.VelHigh;
+        homePrm.velLow = options.VelLow;
+        homePrm.acc = options.Acc;
+        homePrm.dec = options.Dec;
+        homePrm.smoothTime = 0;
+        homePrm.homeOffset = 0;
+        homePrm.searchHomeDistance = (int)options.SearchHomeDistance;
+        homePrm.searchIndexDistance = 0;
+        homePrm.escapeStep = (int)options.EscapeStep;
+    }
+
+    private static string BuildGoHomeTrace(short profile, THomePrm homePrm)
+    {
+        return "GT_GoHome(" +
+            $"{profile},mode={homePrm.mode},moveDir={homePrm.moveDir},edge={homePrm.edge}," +
+            $"velHigh={FormatDouble(homePrm.velHigh)},velLow={FormatDouble(homePrm.velLow)}," +
+            $"acc={FormatDouble(homePrm.acc)},dec={FormatDouble(homePrm.dec)}," +
+            $"searchHomeDistance={homePrm.searchHomeDistance},escapeStep={homePrm.escapeStep})";
+    }
+
     private bool InvokeAxisCommand(int axisNo, Func<short, short, short> api, string action, string apiName)
     {
         if (!TryGetProfile(axisNo, out var profile))
@@ -939,6 +1313,21 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
         }
     }
 
+    private void MarkAxisHomed(int axisNo)
+    {
+        lock (_telemetryLock)
+        {
+            if (!_axisTelemetry.TryGetValue(axisNo, out var cache))
+            {
+                cache = new AxisTelemetryCache();
+                _axisTelemetry[axisNo] = cache;
+            }
+
+            cache.Homed = true;
+            cache.TelemetryEnabled = true;
+        }
+    }
+
     private bool TryReadRealtimeValue(
         string action,
         string expression,
@@ -1105,6 +1494,7 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
 
     private static void ApplyStatusWord(AxisState state, AxisTelemetryCache cache)
     {
+        state.Homed = cache.Homed;
         if (!cache.HasStatusWord)
         {
             return;
@@ -1157,6 +1547,8 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
         public bool HasStatusWord { get; set; }
 
         public int StatusWord { get; set; }
+
+        public bool Homed { get; set; }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -1176,12 +1568,84 @@ public sealed class GoogolMotionCard : IMotionCard, IApiTraceProvider
         public double smoothTime;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    private struct THomePrm
+    {
+        public short mode;
+        public short moveDir;
+        public short indexDir;
+        public short edge;
+        public short triggerIndex;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+        public short[] pad1;
+
+        public double velHigh;
+        public double velLow;
+        public double acc;
+        public double dec;
+        public short smoothTime;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+        public short[] pad2;
+
+        public int homeOffset;
+        public int searchHomeDistance;
+        public int searchIndexDistance;
+        public int escapeStep;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
+        public int[] pad3;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct THomeStatus
+    {
+        public short run;
+        public short stage;
+        public short error;
+        public short pad1;
+        public int capturePos;
+        public int targetPos;
+    }
+
     private enum AxisRunMode
     {
         Unknown = 0,
         Jog = 1,
-        Trap = 2
+        Trap = 2,
+        Home = 3
     }
+
+    [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
+    private static extern short GT_AlarmOff(short axis);
+
+    [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
+    private static extern short GT_LmtsOn(short axis, short limitType);
+
+    [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
+    private static extern short GT_LmtSns(ushort sense);
+
+    [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
+    private static extern short GT_EncSns(ushort sense);
+
+    [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
+    private static extern short GT_ClrSts(short axis, short count);
+
+    [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
+    private static extern short GT_ZeroPos(short axis, short count);
+
+    [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
+    private static extern short GT_AxisOn(short axis);
+
+    [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
+    private static extern short GT_GetHomePrm(short axis, ref THomePrm pHomePrm);
+
+    [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
+    private static extern short GT_GoHome(short axis, ref THomePrm pHomePrm);
+
+    [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
+    private static extern short GT_GetHomeStatus(short axis, ref THomeStatus pHomeStatus);
 
     [DllImport("gts.dll", CallingConvention = CallingConvention.StdCall)]
     private static extern short GTN_AxisOn(short core, short axis);

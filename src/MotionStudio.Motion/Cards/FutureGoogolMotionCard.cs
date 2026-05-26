@@ -1,65 +1,62 @@
-﻿using MotionStudio.Motion.Abstractions;
+using MotionStudio.Motion.Abstractions;
 
 namespace MotionStudio.Motion.Cards;
 
-/// <summary>
-/// Future adapter placeholder. Real vendor API is intentionally not implemented in current version.
-/// </summary>
-public sealed class FutureGoogolMotionCard : IMotionCard
+public sealed class FutureGoogolMotionCard : IMotionCard, IApiTraceProvider
 {
-    public bool IsConnected { get; private set; }
+    private readonly GoogolMotionCard _inner = new();
 
-    public Task<bool> InitAsync()
-    {
-        IsConnected = false;
-        return Task.FromResult(false);
-    }
+    public bool IsConnected => _inner.IsConnected;
 
-    public Task<bool> CloseAsync()
-    {
-        IsConnected = false;
-        return Task.FromResult(true);
-    }
+    public void BeginApiTraceScope() => _inner.BeginApiTraceScope();
 
-    public Task<bool> ServoOnAsync(int axisNo) => Task.FromResult(false);
+    public string ConsumeApiTrace() => _inner.ConsumeApiTrace();
 
-    public Task<bool> ServoOffAsync(int axisNo) => Task.FromResult(false);
+    public Task<bool> InitAsync() => _inner.InitAsync();
 
-    public Task<bool> HomeAsync(int axisNo, double timeout) => Task.FromResult(false);
+    public Task<bool> CloseAsync() => _inner.CloseAsync();
 
-    public Task<bool> AbsMoveAsync(int axisNo, double position, double velocity, double acceleration, double deceleration, double smoothTime, double timeout, CancellationToken token) => Task.FromResult(false);
+    public Task<bool> ServoOnAsync(int axisNo) => _inner.ServoOnAsync(axisNo);
 
-    public Task<bool> RelMoveAsync(int axisNo, double distance, double velocity, double acceleration, double deceleration, double smoothTime, double timeout, CancellationToken token) => Task.FromResult(false);
+    public Task<bool> ServoOffAsync(int axisNo) => _inner.ServoOffAsync(axisNo);
 
-    public Task<bool> JogStartAsync(int axisNo, int direction, double velocity, double acceleration, double deceleration, double smoothTime, CancellationToken token = default) => Task.FromResult(false);
+    public Task<bool> HomeAsync(int axisNo, double timeout) => _inner.HomeAsync(axisNo, timeout);
 
-    public Task<bool> PrepareJogModeAsync(int axisNo) => Task.FromResult(false);
+    public Task<bool> HomeAsync(int axisNo, HomeMotionOptions options, CancellationToken token = default) => _inner.HomeAsync(axisNo, options, token);
 
-    public Task<bool> PrepareTrapModeAsync(int axisNo) => Task.FromResult(false);
+    public Task<bool> AbsMoveAsync(int axisNo, double position, double velocity, double acceleration, double deceleration, double smoothTime, double timeout, CancellationToken token) => _inner.AbsMoveAsync(axisNo, position, velocity, acceleration, deceleration, smoothTime, timeout, token);
 
-    public Task<long?> GetPlannedPositionAsync(int axisNo, CancellationToken token = default) => Task.FromResult<long?>(null);
+    public Task<bool> RelMoveAsync(int axisNo, double distance, double velocity, double acceleration, double deceleration, double smoothTime, double timeout, CancellationToken token) => _inner.RelMoveAsync(axisNo, distance, velocity, acceleration, deceleration, smoothTime, timeout, token);
 
-    public Task<bool> JogStopAsync(int axisNo) => Task.FromResult(false);
+    public Task<bool> JogStartAsync(int axisNo, int direction, double velocity, double acceleration, double deceleration, double smoothTime, CancellationToken token = default) => _inner.JogStartAsync(axisNo, direction, velocity, acceleration, deceleration, smoothTime, token);
 
-    public Task<bool> StopAxisAsync(int axisNo, bool emergency = false) => Task.FromResult(false);
+    public Task<bool> PrepareJogModeAsync(int axisNo) => _inner.PrepareJogModeAsync(axisNo);
 
-    public Task<bool> StopAllAsync(bool emergency = false) => Task.FromResult(false);
+    public Task<bool> PrepareTrapModeAsync(int axisNo) => _inner.PrepareTrapModeAsync(axisNo);
 
-    public Task<bool> ClearAlarmAsync(int axisNo, CancellationToken token = default) => Task.FromResult(false);
+    public Task<long?> GetPlannedPositionAsync(int axisNo, CancellationToken token = default) => _inner.GetPlannedPositionAsync(axisNo, token);
 
-    public Task<bool> ClearAllAlarmAsync(CancellationToken token = default) => Task.FromResult(false);
+    public Task<bool> JogStopAsync(int axisNo) => _inner.JogStopAsync(axisNo);
 
-    public Task<bool> ZeroPositionAsync(int axisNo, CancellationToken token = default) => Task.FromResult(false);
+    public Task<bool> StopAxisAsync(int axisNo, bool emergency = false) => _inner.StopAxisAsync(axisNo, emergency);
 
-    public Task<bool> ResetControllerAsync(CancellationToken token = default) => Task.FromResult(false);
+    public Task<bool> StopAllAsync(bool emergency = false) => _inner.StopAllAsync(emergency);
 
-    public double GetAxisPosition(int axisNo) => 0;
+    public Task<bool> ClearAlarmAsync(int axisNo, CancellationToken token = default) => _inner.ClearAlarmAsync(axisNo, token);
 
-    public AxisState GetAxisState(int axisNo) => new() { AxisNo = axisNo, Message = "Current real motion card driver is not enabled." };
+    public Task<bool> ClearAllAlarmAsync(CancellationToken token = default) => _inner.ClearAllAlarmAsync(token);
 
-    public bool GetDI(string name) => false;
+    public Task<bool> ZeroPositionAsync(int axisNo, CancellationToken token = default) => _inner.ZeroPositionAsync(axisNo, token);
 
-    public bool GetDO(string name) => false;
+    public Task<bool> ResetControllerAsync(CancellationToken token = default) => _inner.ResetControllerAsync(token);
 
-    public bool SetDO(string name, bool value) => false;
+    public double GetAxisPosition(int axisNo) => _inner.GetAxisPosition(axisNo);
+
+    public AxisState GetAxisState(int axisNo) => _inner.GetAxisState(axisNo);
+
+    public bool GetDI(string name) => _inner.GetDI(name);
+
+    public bool GetDO(string name) => _inner.GetDO(name);
+
+    public bool SetDO(string name, bool value) => _inner.SetDO(name, value);
 }

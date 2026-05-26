@@ -28,6 +28,8 @@ public enum AxisDebugOperationMode
 /// </summary>
 public sealed class SingleAxisDebugViewModel : ObservableObject
 {
+    public sealed record HomeModeSelection(HomeReferenceMode Mode, string DisplayName);
+
     private readonly IReadOnlyDictionary<string, IMotionCard> _motionCards;
     private readonly MotionRuntimeState _runtimeState;
     private readonly LogService _logService;
@@ -102,6 +104,12 @@ public sealed class SingleAxisDebugViewModel : ObservableObject
     public ObservableCollection<AxisBaseConfig> Axes { get; } = new();
 
     public ObservableCollection<string> MotionCardNames { get; } = new();
+
+    public IReadOnlyList<HomeModeSelection> HomeModeOptions { get; } = new[]
+    {
+        new HomeModeSelection(HomeReferenceMode.Home, "Home回原点"),
+        new HomeModeSelection(HomeReferenceMode.LimitHome, "限位+Home回原点")
+    };
 
     public AxisBaseConfig? SelectedAxis
     {
@@ -567,9 +575,10 @@ public sealed class SingleAxisDebugViewModel : ObservableObject
 
         var velRatio = ToVelocityRatio(SelectedAxis.HomeVelocity, SelectedAxis.VelocityRatio);
         await ExecuteAxisCommandAsync(
-            (card, axis, _) => card.HomeAsync(axis.AxisNo, axis.HomeTimeout),
-            $"回零完成（速度={SelectedAxis.HomeVelocity:F3}，加速度={SelectedAxis.HomeAcceleration:F3}，减速度={SelectedAxis.HomeDeceleration:F3}，映射速度比例={velRatio:F3}）。",
-            "回零失败。").ConfigureAwait(true);
+            (card, axis, token) => card.HomeAsync(axis.AxisNo, axis.ToHomeMotionOptions(axis.HomeTimeout), token),
+            $"回零完成（高速={SelectedAxis.HomeVelocity:F3}，低速={SelectedAxis.HomeLowVelocity:F3}，加速度={SelectedAxis.HomeAcceleration:F3}，减速度={SelectedAxis.HomeDeceleration:F3}，映射速度比例={velRatio:F3}）。",
+            "回零失败。",
+            true).ConfigureAwait(true);
     }
 
     private async Task ExecuteAxisCommandAsync(
@@ -936,8 +945,11 @@ public sealed class SingleAxisDebugViewModel : ObservableObject
         if (axis.RelAcceleration <= 0) axis.RelAcceleration = 100;
         if (axis.RelDeceleration <= 0) axis.RelDeceleration = 100;
         if (axis.HomeVelocity <= 0) axis.HomeVelocity = 30;
+        if (axis.HomeLowVelocity <= 0) axis.HomeLowVelocity = 1;
         if (axis.HomeAcceleration <= 0) axis.HomeAcceleration = 80;
         if (axis.HomeDeceleration <= 0) axis.HomeDeceleration = 80;
+        if (axis.HomeSearchDistance < 0) axis.HomeSearchDistance = 200000;
+        if (axis.HomeEscapeStep < 0) axis.HomeEscapeStep = 1000;
     }
 
     private int GetNextAxisNo(string motionCardName)
@@ -985,8 +997,17 @@ public sealed class SingleAxisDebugViewModel : ObservableObject
             RelAcceleration = source.RelAcceleration,
             RelDeceleration = source.RelDeceleration,
             HomeVelocity = source.HomeVelocity,
+            HomeLowVelocity = source.HomeLowVelocity,
             HomeAcceleration = source.HomeAcceleration,
-            HomeDeceleration = source.HomeDeceleration
+            HomeDeceleration = source.HomeDeceleration,
+            HomeMode = source.HomeMode,
+            HomeSearchDirection = source.HomeSearchDirection,
+            HomeEncoderDirection = source.HomeEncoderDirection,
+            HomePositiveLimitTriggerLevel = source.HomePositiveLimitTriggerLevel,
+            HomeNegativeLimitTriggerLevel = source.HomeNegativeLimitTriggerLevel,
+            HomeCaptureEdge = source.HomeCaptureEdge,
+            HomeSearchDistance = source.HomeSearchDistance,
+            HomeEscapeStep = source.HomeEscapeStep
         };
     }
 

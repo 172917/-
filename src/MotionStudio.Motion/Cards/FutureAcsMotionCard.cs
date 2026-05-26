@@ -27,6 +27,8 @@ public sealed class FutureAcsMotionCard : IMotionCard
 
     public Task<bool> HomeAsync(int axisNo, double timeout) => Task.FromResult(false);
 
+    public Task<bool> HomeAsync(int axisNo, HomeMotionOptions options, CancellationToken token = default) => Task.FromResult(false);
+
     public Task<bool> AbsMoveAsync(int axisNo, double position, double velocity, double acceleration, double deceleration, double smoothTime, double timeout, CancellationToken token) => Task.FromResult(false);
 
     public Task<bool> RelMoveAsync(int axisNo, double distance, double velocity, double acceleration, double deceleration, double smoothTime, double timeout, CancellationToken token) => Task.FromResult(false);

@@ -1,4 +1,5 @@
 using MotionStudio.Core.Modules;
+using MotionStudio.Motion.Abstractions;
 using MotionStudio.Motion.Config;
 
 namespace MotionStudio.Modules.BuiltIn.ModuleBinding;
@@ -42,7 +43,8 @@ internal static class ModuleBindingResolver
                 axis.AbsDeceleration,
                 axis.RelVelocity,
                 axis.RelAcceleration,
-                axis.RelDeceleration);
+                axis.RelDeceleration,
+                axis.ToHomeMotionOptions());
             return true;
         }
 
@@ -53,7 +55,7 @@ internal static class ModuleBindingResolver
         }
 
         var fallbackCardName = string.IsNullOrWhiteSpace(motionCardName) ? MotionContext.DefaultMotionCardName : motionCardName;
-        binding = new AxisBinding(string.Empty, axisNo, fallbackCardName, 0.5, 30, 50, 100, 100, 50, 100, 100);
+        binding = new AxisBinding(string.Empty, axisNo, fallbackCardName, 0.5, 30, 50, 100, 100, 50, 100, 100, new HomeMotionOptions());
         return true;
     }
 
@@ -155,7 +157,8 @@ internal readonly record struct AxisBinding(
     double AbsDeceleration,
     double RelVelocity,
     double RelAcceleration,
-    double RelDeceleration);
+    double RelDeceleration,
+    HomeMotionOptions HomeOptions);
 
 internal readonly record struct IoBinding(
     string ConfigName,

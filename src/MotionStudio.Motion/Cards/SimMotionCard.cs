@@ -60,8 +60,14 @@ public sealed class SimMotionCard : IMotionCard
         return Task.FromResult(true);
     }
 
-    public async Task<bool> HomeAsync(int axisNo, double timeout)
+    public Task<bool> HomeAsync(int axisNo, double timeout)
     {
+        return HomeAsync(axisNo, new HomeMotionOptions { Timeout = timeout }, CancellationToken.None);
+    }
+
+    public async Task<bool> HomeAsync(int axisNo, HomeMotionOptions options, CancellationToken token = default)
+    {
+        token.ThrowIfCancellationRequested();
         var axis = GetOrCreateAxis(axisNo);
         if (!axis.ServoOn)
         {
@@ -72,13 +78,14 @@ public sealed class SimMotionCard : IMotionCard
         axis.IsMoving = true;
         axis.Arrived = false;
         axis.Stopped = false;
-        axis.Velocity = 1;
+        axis.Velocity = (int)options.SearchDirection * Math.Abs(options.VelHigh);
         try
         {
-            await Task.Delay(TimeSpan.FromMilliseconds(Math.Min(timeout * 1000, 500)), CancellationToken.None).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromMilliseconds(Math.Min(options.Timeout * 1000, 500)), token).ConfigureAwait(false);
             axis.Position = 0;
             axis.Homed = true;
             axis.Message = "回零完成";
+            return true;
         }
         finally
         {
@@ -87,8 +94,6 @@ public sealed class SimMotionCard : IMotionCard
             axis.Stopped = true;
             axis.Velocity = 0;
         }
-
-        return true;
     }
 
     public async Task<bool> AbsMoveAsync(

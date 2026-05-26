@@ -17,6 +17,8 @@ public interface IMotionCard
 
     Task<bool> HomeAsync(int axisNo, double timeout);
 
+    Task<bool> HomeAsync(int axisNo, HomeMotionOptions options, CancellationToken token = default);
+
     Task<bool> AbsMoveAsync(
         int axisNo,
         double position,

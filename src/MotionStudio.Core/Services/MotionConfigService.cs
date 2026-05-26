@@ -208,8 +208,17 @@ public sealed class MotionConfigService
             RelAcceleration = item.RelAcceleration,
             RelDeceleration = item.RelDeceleration,
             HomeVelocity = item.HomeVelocity,
+            HomeLowVelocity = item.HomeLowVelocity,
             HomeAcceleration = item.HomeAcceleration,
-            HomeDeceleration = item.HomeDeceleration
+            HomeDeceleration = item.HomeDeceleration,
+            HomeMode = item.HomeMode,
+            HomeSearchDirection = item.HomeSearchDirection,
+            HomeEncoderDirection = item.HomeEncoderDirection,
+            HomePositiveLimitTriggerLevel = item.HomePositiveLimitTriggerLevel,
+            HomeNegativeLimitTriggerLevel = item.HomeNegativeLimitTriggerLevel,
+            HomeCaptureEdge = item.HomeCaptureEdge,
+            HomeSearchDistance = item.HomeSearchDistance,
+            HomeEscapeStep = item.HomeEscapeStep
         };
     }
 

@@ -54,7 +54,9 @@ public sealed class HomeModule : MotionModuleBase
             return ModuleResult.Fail("超时必须大于 0");
         }
 
-        var ok = await context.GetMotionCard(axis.MotionCardName).HomeAsync(axis.AxisNo, timeout).ConfigureAwait(false);
+        var ok = await context.GetMotionCard(axis.MotionCardName)
+            .HomeAsync(axis.AxisNo, axis.HomeOptions with { Timeout = timeout }, token)
+            .ConfigureAwait(false);
         return ok ? ModuleResult.Ok("回零完成") : ModuleResult.Fail("回零失败");
     }
 }

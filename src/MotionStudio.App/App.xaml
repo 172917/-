@@ -20,6 +20,7 @@
             <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <vm:BoolToRunTextConverter x:Key="BoolToRunTextConverter" />
             <vm:FlowIndexConverter x:Key="FlowIndexConverter" />
+            <vm:EnumEqualsConverter x:Key="EnumEqualsConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

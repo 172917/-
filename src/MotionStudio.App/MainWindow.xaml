@@ -155,12 +155,12 @@
 
             <views:MotionStatusPanel Grid.Row="2" DataContext="{Binding}" />
         </Grid>
-        <!--右上角提示区域-->
+        <!--左下角提示区域，避免遮挡右侧轴参数和工具按钮-->
         <StackPanel x:Name="GrowlHost"
                     Width="360"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    Margin="0,64,16,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Margin="16,0,0,16"
                     Panel.ZIndex="20" />
     </Grid>
 </hc:Window>
